@@ -9,6 +9,12 @@ pub struct Position {
 }
 
 #[derive(Component)]
+pub struct TargetedPosition {
+    pub x: i32,
+    pub y: i32,
+}
+
+#[derive(Component)]
 pub struct Renderable {
     pub glyph: rltk::FontCharType,
     pub fg: RGB,
@@ -34,7 +40,13 @@ pub struct Stored {}
 pub struct Impassable {}
 
 #[derive(Component)]
+pub struct Door {}
+
+#[derive(Component)]
 pub struct RequiresItem {
     pub key: Entity,
 }
+
+#[derive(Component)]
+pub struct PermanentItem {}
 

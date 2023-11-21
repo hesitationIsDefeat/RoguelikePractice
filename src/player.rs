@@ -1,8 +1,8 @@
 use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
-use super::{Position, Player, TileType, Map, State, MAP_WIDTH, MAP_HEIGHT, Item, RunState};
+use super::{Position, Player, TileType, Map, State, MAP_WIDTH, MAP_HEIGHT, Item, RunState, TargetedPosition};
 
-pub fn try_to_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
+pub fn try_to_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut player_point = ecs.write_resource::<Point>();
     let mut positions = ecs.write_storage::<Position>();
     let player = ecs.write_storage::<Player>();
@@ -17,10 +17,18 @@ pub fn try_to_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
                 player_point.x = new_x;
                 pos.y = new_y;
                 player_point.y = new_y;
+                println!("x: {}, y: {}", pos.x, pos.y);
+            }
+            TileType::RequiresKey => {
+                let mut targeted_pos = ecs.write_resource::<TargetedPosition>();
+                targeted_pos.x = new_x;
+                targeted_pos.y = new_y;
+                return RunState::UseInventory;
             }
             _ => {}
         }
     }
+    RunState::Game
 }
 
 pub fn collect_item(ecs: &mut World) {
@@ -41,11 +49,11 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     match ctx.key {
         None => {}
         Some(key) => match key {
-            VirtualKeyCode::Up => try_to_move_player(0, -1, &mut gs.ecs),
-            VirtualKeyCode::Down => try_to_move_player(0, 1, &mut gs.ecs),
-            VirtualKeyCode::Left => try_to_move_player(-1, 0, &mut gs.ecs),
-            VirtualKeyCode::Right => try_to_move_player(1, 0, &mut gs.ecs),
-            VirtualKeyCode::I => return RunState::Inventory,
+            VirtualKeyCode::Up => return try_to_move_player(0, -1, &mut gs.ecs),
+            VirtualKeyCode::Down => return try_to_move_player(0, 1, &mut gs.ecs),
+            VirtualKeyCode::Left => return try_to_move_player(-1, 0, &mut gs.ecs),
+            VirtualKeyCode::Right => return try_to_move_player(1, 0, &mut gs.ecs),
+            VirtualKeyCode::I => return RunState::ShowInventory,
             _ => {}
         },
     }

@@ -87,7 +87,7 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> ItemMenuResult {
     ctx.print_color(18, y + count as i32 + 1, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "I to cancel");
 
     for (_pack, name) in (&backpack, &names).join() {
-        ctx.print(21, y, &name.name.to_string());
+        ctx.print(18, y, &name.name.to_string());
         y += 1;
     }
 
@@ -130,11 +130,11 @@ pub fn use_item(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
 
     if let Some(key) = ctx.key {
         let key_num = rltk::letter_to_option(key);
-        if key_num > -1 && key_num < count as i32 {
-            return (ItemMenuResult::Selected, Some(usable[key_num as usize]));
+        return if key_num > -1 && key_num < count as i32 {
+            (ItemMenuResult::Selected, Some(usable[key_num as usize]))
         } else {
-            return (ItemMenuResult::Cancel, None);
-        }
+            (ItemMenuResult::Cancel, None)
+        };
     }
     (ItemMenuResult::NoResponse, None)
 }
