@@ -1,4 +1,4 @@
-use rltk::{GameState, Rltk, RGB, BLACK, PURPLE2, Point};
+use rltk::{GameState, Rltk, RGB, BLACK, PURPLE2, Point, GREEN};
 use specs::prelude::*;
 
 mod player;
@@ -93,15 +93,16 @@ impl GameState for State {
                         let item = item.unwrap();
                         let barriers_to_remove: Vec<Entity> = Vec::new();
 
-                        let mut positions = self.ecs.write_storage::<Position>();
+                        let positions = self.ecs.read_storage::<Position>();
                         let target_pos = self.ecs.fetch::<TargetedPosition>();
                         let mut requires_item = self.ecs.write_storage::<RequiresItem>();
+                        let mut renderables = self.ecs.write_storage::<Renderable>();
                         let names = self.ecs.read_storage::<Name>();
                         let mut log = self.ecs.write_resource::<GameLog>();
                         let mut map = self.ecs.write_resource::<Map>();
                         let entities = self.ecs.entities();
 
-                        for (ent, pos, req) in (&entities, &positions, &requires_item).join() {
+                        for (ent, pos, req, rend) in (&entities, &positions, &requires_item, &mut renderables).join() {
                             if pos.x == target_pos.x && pos.y == target_pos.y {
                                 if req.key == item {
                                     log.entries.push(format!("Esya kullanildi: {}", names.get(item).unwrap().name));
@@ -111,6 +112,7 @@ impl GameState for State {
                                     }
                                     if self.ecs.read_storage::<Door>().get(ent).is_some() {
                                         map.tiles[Map::xy_to_tile(pos.x, pos.y)] = TileType::Floor;
+                                        rend.fg = RGB::named(GREEN);
                                     }
                                     run_state = RunState::Game;
                                 } else {
