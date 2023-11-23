@@ -15,14 +15,16 @@ pub use components::*;
 pub use map::*;
 use rect::*;
 use crate::gamelog::GameLog;
-use crate::gui::ItemMenuResult;
+use crate::gui::{ItemMenuResult, MainMenuResult, MainMenuSelection};
+use crate::gui::MainMenuSelection::NewGame;
+
 
 pub const SCREEN_WIDTH: i32 = 80;
 pub const SCREEN_HEIGHT: i32 = 50;
 
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum RunState {
-    Menu,
+    Menu { menu_selection: MainMenuSelection },
     Game,
     ShowInventory,
     UseInventory,
@@ -52,26 +54,45 @@ impl State {
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut Rltk) {
-        ctx.cls();
-        draw_map(&self.ecs, ctx);
-
-        {
-            let positions = self.ecs.read_storage::<Position>();
-            let renderables = self.ecs.read_storage::<Renderable>();
-            for (pos, rend) in (&positions, &renderables).join() {
-                ctx.set(pos.x, pos.y, rend.fg, rend.bg, rend.glyph)
-            }
-        }
-
-        gui::draw_ui(&self.ecs, ctx);
-
         let mut run_state;
         {
             let state_reader = self.ecs.fetch::<RunState>();
             run_state = *state_reader;
         }
+        ctx.cls();
+
         match run_state {
-            RunState::Menu => {}
+            RunState::Menu { .. } => {}
+            _ => {
+                draw_map(&self.ecs, ctx);
+
+                {
+                    let positions = self.ecs.read_storage::<Position>();
+                    let renderables = self.ecs.read_storage::<Renderable>();
+                    let mut data = (&positions, &renderables).join().collect::<Vec<_>>();
+                    data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
+                    for (pos, rend) in data {
+                        ctx.set(pos.x, pos.y, rend.fg, rend.bg, rend.glyph)
+                    }
+                }
+                gui::draw_ui(&self.ecs, ctx);
+            }
+        }
+
+        match run_state {
+            RunState::Menu { .. } => {
+                let result = gui::main_menu(self, ctx);
+                match result {
+                    MainMenuResult::NoSelection { selected } => run_state = RunState::Menu { menu_selection: selected },
+                    MainMenuResult::Selected { selected } => {
+                        match selected {
+                            MainMenuSelection::NewGame => run_state = RunState::Game,
+                            MainMenuSelection::LoadGame => run_state = RunState::Game,
+                            MainMenuSelection::QuitGame => std::process::exit(0)
+                        }
+                    }
+                }
+            }
             RunState::Game => {
                 self.run_systems();
                 self.ecs.maintain();
@@ -155,7 +176,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<PermanentItem>();
 
     let (mut map, player_coord) = Map::new_map_rooms_and_corridors();
-    let log = gamelog::GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
+    let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
     let player_entity = spawner::build_player(&mut gs,
                                               String::from("Onat"),
                                               player_coord,
@@ -163,7 +184,7 @@ fn main() -> rltk::BError {
                                               RGB::named(PURPLE2),
                                               RGB::named(BLACK));
     let lib_key = spawner::build_key(&mut gs, String::from("Kütüphane Anahtari"), (41, 26));
-    let home_hey = spawner::build_key(&mut gs, String::from("Ev Anahtari"), (42, 26));
+    let home_key = spawner::build_key(&mut gs, String::from("Ev Anahtari"), (42, 26));
     spawner::build_door(&mut gs, String::from("Kütüphane Kapisi"), (42, 27), 'D', lib_key);
     map.adjust_tiles(&mut gs.ecs);
     gs.ecs.insert(map);
@@ -171,7 +192,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(player_entity);
     gs.ecs.insert(Point::new(player_coord.0, player_coord.1));
     gs.ecs.insert(TargetedPosition { x: -1, y: -1 });
-    gs.ecs.insert(RunState::Game);
+    gs.ecs.insert(RunState::Menu { menu_selection: NewGame });
 
     rltk::main_loop(context, gs)
 }

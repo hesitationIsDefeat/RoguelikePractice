@@ -1,7 +1,86 @@
-use rltk::{RGB, Rltk, Point, Console, WHITE, BLACK, MAGENTA, VirtualKeyCode};
+use rltk::{RGB, Rltk, Point, WHITE, BLACK, MAGENTA, VirtualKeyCode, RED, GREY0, GREY3, GREY};
 use specs::prelude::*;
-use crate::{Map, MAP_HEIGHT, MAP_WIDTH, Name, Position, SCREEN_HEIGHT, State, Stored};
+use crate::{Map, MAP_HEIGHT, MAP_WIDTH, Name, Position, RunState, SCREEN_HEIGHT, State, Stored};
 use crate::gamelog::GameLog;
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum ItemMenuResult { Cancel, NoResponse, Selected }
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum MainMenuSelection {
+    NewGame,
+    LoadGame,
+    QuitGame,
+}
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum MainMenuResult {
+    NoSelection { selected: MainMenuSelection },
+    Selected { selected: MainMenuSelection },
+}
+
+const TITLE_Y: i32 = SCREEN_HEIGHT / 3;
+const DELTA_Y: i32 = 2;
+const NEW_GAME_Y: i32 = SCREEN_HEIGHT / 2;
+const LOAD_GAME_Y: i32 = NEW_GAME_Y + DELTA_Y;
+const QUIT_GAME_Y: i32 = LOAD_GAME_Y + DELTA_Y;
+const TITLE_STR: &str = "OYUNCA HOS GELDIN";
+const NEW_GAME_STR: &str = "YENI OYUN";
+const LOAD_GAME_STR: &str = "OYUN YUKLE";
+const QUIT_GAME_STR: &str = "OYUNDAN CIK";
+
+
+pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
+    let state = gs.ecs.fetch::<RunState>();
+    ctx.print_color_centered(TITLE_Y, RGB::named(RED), RGB::named(BLACK), TITLE_STR);
+
+    if let RunState::Menu { menu_selection: selected } = *state {
+        if selected == MainMenuSelection::NewGame {
+            ctx.print_color_centered(NEW_GAME_Y, RGB::named(RED), RGB::named(GREY0), NEW_GAME_STR);
+        } else {
+            ctx.print_color_centered(NEW_GAME_Y, RGB::named(WHITE), RGB::named(GREY3), NEW_GAME_STR);
+        }
+        if selected == MainMenuSelection::LoadGame {
+            ctx.print_color_centered(LOAD_GAME_Y, RGB::named(RED), RGB::named(GREY0), LOAD_GAME_STR);
+        } else {
+            ctx.print_color_centered(LOAD_GAME_Y, RGB::named(WHITE), RGB::named(GREY3), LOAD_GAME_STR);
+        }
+        if selected == MainMenuSelection::QuitGame {
+            ctx.print_color_centered(QUIT_GAME_Y, RGB::named(RED), RGB::named(GREY0), QUIT_GAME_STR);
+        } else {
+            ctx.print_color_centered(QUIT_GAME_Y, RGB::named(WHITE), RGB::named(GREY3), QUIT_GAME_STR);
+        }
+
+        return match ctx.key {
+            None => MainMenuResult::NoSelection { selected },
+            Some(key) => {
+                match key {
+                    VirtualKeyCode::Up => {
+                        let new_selection;
+                        match selected {
+                            MainMenuSelection::NewGame => new_selection = MainMenuSelection::QuitGame,
+                            MainMenuSelection::LoadGame => new_selection = MainMenuSelection::NewGame,
+                            MainMenuSelection::QuitGame => new_selection = MainMenuSelection::LoadGame,
+                        }
+                        MainMenuResult::NoSelection { selected: new_selection }
+                    }
+                    VirtualKeyCode::Down => {
+                        let new_selection;
+                        match selected {
+                            MainMenuSelection::NewGame => new_selection = MainMenuSelection::LoadGame,
+                            MainMenuSelection::LoadGame => new_selection = MainMenuSelection::QuitGame,
+                            MainMenuSelection::QuitGame => new_selection = MainMenuSelection::NewGame,
+                        }
+                        MainMenuResult::NoSelection { selected: new_selection }
+                    }
+                    VirtualKeyCode::Return => MainMenuResult::Selected { selected },
+                    _ => MainMenuResult::NoSelection { selected }
+                }
+            }
+        };
+    }
+    MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame }
+}
 
 pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     ctx.draw_box(0, MAP_HEIGHT, MAP_WIDTH - 1, SCREEN_HEIGHT - MAP_HEIGHT,
@@ -45,34 +124,31 @@ fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
             let left_x = mouse_pos.0 - width;
             let mut y = mouse_pos.1;
             for s in tooltip.iter() {
-                ctx.print_color(left_x, y, RGB::named(rltk::RED), RGB::named(rltk::GREY), s);
+                ctx.print_color(left_x, y, RGB::named(RED), RGB::named(GREY), s);
                 let padding = (width - s.len() as i32) - 1;
                 for i in 0..padding {
-                    ctx.print_color(arrow_pos.x - i, y, RGB::named(rltk::RED), RGB::named(rltk::GREY), &" ".to_string());
+                    ctx.print_color(arrow_pos.x - i, y, RGB::named(RED), RGB::named(GREY), &" ".to_string());
                 }
                 y += 1;
             }
-            ctx.print_color(arrow_pos.x, arrow_pos.y, RGB::named(rltk::RED), RGB::named(rltk::GREY), &"->".to_string());
+            ctx.print_color(arrow_pos.x, arrow_pos.y, RGB::named(RED), RGB::named(GREY), &"->".to_string());
         } else {
             let arrow_pos = Point::new(mouse_pos.0 + 1, mouse_pos.1);
             let left_x = mouse_pos.0 + 3;
             let mut y = mouse_pos.1;
             for s in tooltip.iter() {
-                ctx.print_color(left_x + 1, y, RGB::named(rltk::RED), RGB::named(rltk::GREY), s);
+                ctx.print_color(left_x + 1, y, RGB::named(RED), RGB::named(GREY), s);
                 let padding = (width - s.len() as i32) - 1;
                 for i in 0..padding {
-                    ctx.print_color(arrow_pos.x + 1 + i, y, RGB::named(rltk::RED), RGB::named(rltk::GREY), &" ".to_string());
+                    ctx.print_color(arrow_pos.x + 1 + i, y, RGB::named(RED), RGB::named(GREY), &" ".to_string());
                 }
                 y += 1;
             }
-            ctx.print_color(arrow_pos.x, arrow_pos.y, RGB::named(rltk::RED), RGB::named(rltk::GREY), &"<-".to_string());
+            ctx.print_color(arrow_pos.x, arrow_pos.y, RGB::named(RED), RGB::named(GREY), &"<-".to_string());
         }
     }
 }
 
-
-#[derive(PartialEq, Copy, Clone)]
-pub enum ItemMenuResult { Cancel, NoResponse, Selected }
 
 pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> ItemMenuResult {
     let names = gs.ecs.read_storage::<Name>();
@@ -82,9 +158,9 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> ItemMenuResult {
     let count = inventory.count();
 
     let mut y = (25 - (count / 2)) as i32;
-    ctx.draw_box(15, y - 2, 31, (count + 3) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
-    ctx.print_color(18, y - 2, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Inventory");
-    ctx.print_color(18, y + count as i32 + 1, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "I to cancel");
+    ctx.draw_box(15, y - 2, 31, (count + 3) as i32, RGB::named(WHITE), RGB::named(BLACK));
+    ctx.print_color(18, y - 2, RGB::named(rltk::YELLOW), RGB::named(BLACK), "Esyalar");
+    ctx.print_color(18, y + count as i32 + 1, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Cikmak icin: I");
 
     for (_pack, name) in (&backpack, &names).join() {
         ctx.print(18, y, &name.name.to_string());
@@ -112,8 +188,8 @@ pub fn use_item(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
 
     let mut y = (25 - (count / 2)) as i32;
     ctx.draw_box(15, y - 2, 31, (count + 3) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
-    ctx.print_color(18, y - 2, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Inventory");
-    ctx.print_color(18, y + count as i32 + 1, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "I to cancel");
+    ctx.print_color(18, y - 2, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Esyalar");
+    ctx.print_color(18, y + count as i32 + 1, RGB::named(rltk::YELLOW), RGB::named(BLACK), "Cikmak icin: I");
 
     let mut j = 0;
     let mut usable: Vec<Entity> = Vec::new();

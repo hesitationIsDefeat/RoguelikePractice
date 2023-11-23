@@ -6,7 +6,7 @@ pub fn build_player(gs: &mut State, name: String, coord: (i32, i32), glyph: rltk
     gs.ecs
         .create_entity()
         .with(Position { x: coord.0, y: coord.1 })
-        .with(Renderable { glyph, fg, bg })
+        .with(Renderable { glyph, fg, bg, render_order: 0 })
         .with(Player {})
         .with(Name { name })
         .build()
@@ -17,7 +17,7 @@ pub fn build_key(gs: &mut State, name: String, coord: (i32, i32)) -> Entity {
         .create_entity()
         .with(Name { name })
         .with(Position { x: coord.0, y: coord.1 })
-        .with(Renderable { glyph: rltk::to_cp437('k'), fg: RGB::named(YELLOW), bg: RGB::named(BLACK) })
+        .with(Renderable { glyph: rltk::to_cp437('k'), fg: RGB::named(YELLOW), bg: RGB::named(BLACK), render_order: 1 })
         .with(Item {})
         .build()
 }
@@ -27,7 +27,7 @@ pub fn build_door(gs: &mut State, name: String, coord: (i32, i32), image: char, 
         .create_entity()
         .with(Name { name })
         .with(Position { x: coord.0, y: coord.1 })
-        .with(Renderable { glyph: rltk::to_cp437(image), fg: RGB::named(BLUE), bg: RGB::named(BLACK) })
+        .with(Renderable { glyph: rltk::to_cp437(image), fg: RGB::named(BLUE), bg: RGB::named(BLACK), render_order: 1 })
         .with(Impassable {})
         .with(Door {})
         .with(RequiresItem { key })
