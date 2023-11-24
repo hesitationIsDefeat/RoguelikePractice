@@ -1,5 +1,6 @@
 use std::cmp::{min, max};
 use rltk::{RGB, Rltk, BLACK};
+use serde::{Deserialize, Serialize};
 use specs::{Join, World, WorldExt};
 use super::{Impassable, Position, Rect};
 
@@ -7,13 +8,14 @@ pub const MAP_WIDTH: i32 = 80;
 pub const MAP_HEIGHT: i32 = 43;
 pub const MAP_TILES: i32 = MAP_WIDTH * MAP_HEIGHT;
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
     Wall,
     Floor,
     RequiresKey,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub width: i32,

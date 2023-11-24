@@ -1,20 +1,22 @@
 use specs::prelude::*;
 use specs_derive::*;
 use rltk::{RGB};
+use serde::{Deserialize, Serialize};
 
-#[derive(Component)]
+#[derive(Component, ConvertSaveload, Clone)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
 }
 
-#[derive(Component)]
+#[derive(Component, ConvertSaveload, Clone)]
 pub struct TargetedPosition {
     pub x: i32,
     pub y: i32,
 }
 
-#[derive(Component)]
+
+#[derive(Component, ConvertSaveload, Clone)]
 pub struct Renderable {
     pub glyph: rltk::FontCharType,
     pub fg: RGB,
@@ -22,32 +24,39 @@ pub struct Renderable {
     pub render_order: i32,
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Player {}
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct Name {
     pub name: String,
 }
 
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Item {}
 
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Stored {}
 
 // PERSONAL WORK
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Impassable {}
 
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Door {}
 
-#[derive(Component)]
+#[derive(Component, ConvertSaveload, Clone)]
 pub struct RequiresItem {
     pub key: Entity,
 }
 
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct PermanentItem {}
+
+pub struct SerializeMe;
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct SerializationHelper {
+    pub map: super::map::Map,
+}
 

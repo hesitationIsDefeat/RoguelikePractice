@@ -9,6 +9,7 @@ mod gui;
 mod gamelog;
 mod spawner;
 mod inventory_system;
+mod save_load_system;
 
 use player::*;
 pub use components::*;
@@ -16,7 +17,7 @@ pub use map::*;
 use rect::*;
 use crate::gamelog::GameLog;
 use crate::gui::{ItemMenuResult, MainMenuResult, MainMenuSelection};
-use crate::gui::MainMenuSelection::NewGame;
+use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
 
 pub const SCREEN_WIDTH: i32 = 80;
@@ -26,6 +27,7 @@ pub const SCREEN_HEIGHT: i32 = 50;
 pub enum RunState {
     Menu { menu_selection: MainMenuSelection },
     Game,
+    SaveGame,
     ShowInventory,
     UseInventory,
 }
@@ -97,6 +99,10 @@ impl GameState for State {
                 self.run_systems();
                 self.ecs.maintain();
                 run_state = player_input(self, ctx);
+            }
+            RunState::SaveGame => {
+                save_load_system::save_game(&mut self.ecs);
+                run_state = RunState::Menu { menu_selection: MainMenuSelection::LoadGame }
             }
             RunState::ShowInventory => {
                 if gui::show_inventory(self, ctx) == ItemMenuResult::Cancel {
@@ -174,6 +180,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Door>();
     gs.ecs.register::<RequiresItem>();
     gs.ecs.register::<PermanentItem>();
+    gs.ecs.register::<SimpleMarker<SerializeMe>>();
+    gs.ecs.register::<SerializationHelper>();
 
     let (mut map, player_coord) = Map::new_map_rooms_and_corridors();
     let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
@@ -193,6 +201,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(Point::new(player_coord.0, player_coord.1));
     gs.ecs.insert(TargetedPosition { x: -1, y: -1 });
     gs.ecs.insert(RunState::Game);
+    gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     rltk::main_loop(context, gs)
 }
