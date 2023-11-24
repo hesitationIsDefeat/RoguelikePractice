@@ -1,7 +1,10 @@
 use specs::prelude::*;
+use specs::saveload::{Marker, ConvertSaveload};
+use specs::error::NoError;
 use specs_derive::*;
 use rltk::{RGB};
 use serde::{Deserialize, Serialize};
+
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Position {

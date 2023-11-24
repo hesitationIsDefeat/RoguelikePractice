@@ -1,6 +1,6 @@
 use rltk::{RGB, Rltk, Point, WHITE, BLACK, MAGENTA, VirtualKeyCode, RED, GREY0, GREY3, GREY};
 use specs::prelude::*;
-use crate::{Door, Map, MAP_HEIGHT, MAP_WIDTH, Name, Position, RequiresItem, RunState, SCREEN_HEIGHT, State, Stored};
+use crate::{Door, Map, MAP_HEIGHT, MAP_WIDTH, Name, Position, RequiresItem, RunState, save_load_system, SCREEN_HEIGHT, State, Stored};
 use crate::gamelog::GameLog;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -31,6 +31,7 @@ const QUIT_GAME_STR: &str = "OYUNDAN CIK";
 
 
 pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
+    let save_exists = save_load_system::save_exists();
     let state = gs.ecs.fetch::<RunState>();
     ctx.print_color_centered(TITLE_Y, RGB::named(RED), RGB::named(BLACK), TITLE_STR);
 
@@ -40,10 +41,12 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
         } else {
             ctx.print_color_centered(NEW_GAME_Y, RGB::named(WHITE), RGB::named(GREY3), NEW_GAME_STR);
         }
-        if selected == MainMenuSelection::LoadGame {
-            ctx.print_color_centered(LOAD_GAME_Y, RGB::named(RED), RGB::named(GREY0), LOAD_GAME_STR);
-        } else {
-            ctx.print_color_centered(LOAD_GAME_Y, RGB::named(WHITE), RGB::named(GREY3), LOAD_GAME_STR);
+        if save_exists {
+            if selected == MainMenuSelection::LoadGame {
+                ctx.print_color_centered(LOAD_GAME_Y, RGB::named(RED), RGB::named(GREY0), LOAD_GAME_STR);
+            } else {
+                ctx.print_color_centered(LOAD_GAME_Y, RGB::named(WHITE), RGB::named(GREY3), LOAD_GAME_STR);
+            }
         }
         if selected == MainMenuSelection::QuitGame {
             ctx.print_color_centered(QUIT_GAME_Y, RGB::named(RED), RGB::named(GREY0), QUIT_GAME_STR);
@@ -60,14 +63,20 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
                         match selected {
                             MainMenuSelection::NewGame => new_selection = MainMenuSelection::QuitGame,
                             MainMenuSelection::LoadGame => new_selection = MainMenuSelection::NewGame,
-                            MainMenuSelection::QuitGame => new_selection = MainMenuSelection::LoadGame,
+                            MainMenuSelection::QuitGame => new_selection = match save_exists {
+                                true => MainMenuSelection::LoadGame,
+                                false => MainMenuSelection::NewGame
+                            }
                         }
                         MainMenuResult::NoSelection { selected: new_selection }
                     }
                     VirtualKeyCode::Down => {
                         let new_selection;
                         match selected {
-                            MainMenuSelection::NewGame => new_selection = MainMenuSelection::LoadGame,
+                            MainMenuSelection::NewGame => new_selection = match save_exists {
+                                true => MainMenuSelection::LoadGame,
+                                false => MainMenuSelection::QuitGame
+                            },
                             MainMenuSelection::LoadGame => new_selection = MainMenuSelection::QuitGame,
                             MainMenuSelection::QuitGame => new_selection = MainMenuSelection::NewGame,
                         }

@@ -89,7 +89,10 @@ impl GameState for State {
                     MainMenuResult::Selected { selected } => {
                         match selected {
                             MainMenuSelection::NewGame => run_state = RunState::Game,
-                            MainMenuSelection::LoadGame => run_state = RunState::Game,
+                            MainMenuSelection::LoadGame => {
+                                save_load_system::load_game(&mut self.ecs);
+                                run_state = RunState::Game;
+                            }
                             MainMenuSelection::QuitGame => std::process::exit(0)
                         }
                     }
@@ -183,6 +186,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();
 
+    gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
+
     let (mut map, player_coord) = Map::new_map_rooms_and_corridors();
     let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
     let player_entity = spawner::build_player(&mut gs,
@@ -200,8 +205,8 @@ fn main() -> rltk::BError {
     gs.ecs.insert(player_entity);
     gs.ecs.insert(Point::new(player_coord.0, player_coord.1));
     gs.ecs.insert(TargetedPosition { x: -1, y: -1 });
-    gs.ecs.insert(RunState::Game);
-    gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
+    //gs.ecs.insert(RunState::Game);
+    gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
 
     rltk::main_loop(context, gs)
 }
