@@ -112,7 +112,7 @@ impl GameState for State {
                     }
                     ItemMenuResult::Selected => {
                         let item = item.unwrap();
-                        let barriers_to_remove: Vec<Entity> = Vec::new();
+                        let mut barriers_to_remove: Vec<Entity> = Vec::new();
 
                         let positions = self.ecs.read_storage::<Position>();
                         let target_pos = self.ecs.fetch::<TargetedPosition>();
@@ -128,13 +128,13 @@ impl GameState for State {
                                 if req.key == item {
                                     log.entries.push(format!("Esya kullanildi: {}", names.get(item).unwrap().name));
                                     if self.ecs.read_storage::<PermanentItem>().get(item).is_none() {
-                                        println!("Removed item");
                                         self.ecs.write_storage::<Stored>().remove(item);
                                     }
                                     if self.ecs.read_storage::<Door>().get(ent).is_some() {
                                         map.tiles[Map::xy_to_tile(pos.x, pos.y)] = TileType::Floor;
                                         rend.fg = RGB::named(GREEN);
                                     }
+                                    barriers_to_remove.push(ent);
                                     run_state = RunState::Game;
                                 } else {
                                     log.entries.push(String::from("Yanlis esya"));
@@ -192,7 +192,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(player_entity);
     gs.ecs.insert(Point::new(player_coord.0, player_coord.1));
     gs.ecs.insert(TargetedPosition { x: -1, y: -1 });
-    gs.ecs.insert(RunState::Menu { menu_selection: NewGame });
+    gs.ecs.insert(RunState::Game);
 
     rltk::main_loop(context, gs)
 }

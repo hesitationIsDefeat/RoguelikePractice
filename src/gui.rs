@@ -1,6 +1,6 @@
 use rltk::{RGB, Rltk, Point, WHITE, BLACK, MAGENTA, VirtualKeyCode, RED, GREY0, GREY3, GREY};
 use specs::prelude::*;
-use crate::{Map, MAP_HEIGHT, MAP_WIDTH, Name, Position, RunState, SCREEN_HEIGHT, State, Stored};
+use crate::{Door, Map, MAP_HEIGHT, MAP_WIDTH, Name, Position, RequiresItem, RunState, SCREEN_HEIGHT, State, Stored};
 use crate::gamelog::GameLog;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -102,13 +102,21 @@ fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();
+    let entities = ecs.entities();
 
     let mouse_pos = ctx.mouse_pos();
     if mouse_pos.0 >= map.width || mouse_pos.1 >= map.height { return; }
     let mut tooltip: Vec<String> = Vec::new();
-    for (name, position) in (&names, &positions).join() {
+    for (name, position, ent) in (&names, &positions, &entities).join() {
         if position.x == mouse_pos.0 && position.y == mouse_pos.1 {
-            tooltip.push(name.name.to_string());
+            let mut name = name.name.to_string();
+            if ecs.read_storage::<Door>().get(ent).is_some() {
+                name += match ecs.read_storage::<RequiresItem>().get(ent).is_some() {
+                    true => " (Kapali)",
+                    false => " (Acik)"
+                };
+            }
+            tooltip.push(name);
         }
     }
 
