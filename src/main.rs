@@ -188,7 +188,7 @@ fn main() -> rltk::BError {
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
-    let (mut map, player_coord) = Map::new_map_rooms_and_corridors();
+    let (mut map, player_coord) = Map::new_map_rooms_and_corridors(Place::School(String::from("Okul"), String::from("2023")));
     let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
     let player_entity = spawner::build_player(&mut gs,
                                               String::from("Onat"),

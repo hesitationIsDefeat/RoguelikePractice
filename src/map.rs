@@ -1,4 +1,5 @@
 use std::cmp::{min, max};
+use std::fmt::Display;
 use rltk::{RGB, Rltk, BLACK};
 use serde::{Deserialize, Serialize};
 use specs::{Join, World, WorldExt};
@@ -15,11 +16,33 @@ pub enum TileType {
     RequiresKey,
 }
 
+#[derive(PartialEq, Clone, Serialize, Deserialize)]
+pub enum Place {
+    School(String, String),
+    Ottoman(String, String),
+}
+
+impl Place {
+    pub fn get_name(&self) -> &String {
+        match self {
+            Place::School(name, _)
+            | Place::Ottoman(name, _) => name
+        }
+    }
+    pub fn get_year(&self) -> &String {
+        match self {
+            Place::School(_, year)
+            | Place::Ottoman(_, year) => year
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub width: i32,
     pub height: i32,
+    pub place: Place,
 }
 
 impl Map {
@@ -66,11 +89,12 @@ impl Map {
         }
     }
 
-    pub fn new_map_rooms_and_corridors() -> (Map, (i32, i32)) {
+    pub fn new_map_rooms_and_corridors(place: Place) -> (Map, (i32, i32)) {
         let mut map = Map {
             tiles: vec![TileType::Wall; MAP_TILES as usize],
             width: MAP_WIDTH,
             height: MAP_HEIGHT,
+            place,
         };
 
         let school = Rect::new(4, 4, 12, 10);

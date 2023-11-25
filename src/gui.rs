@@ -104,6 +104,9 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     }
     let mouse_pos = ctx.mouse_pos();
     ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(MAGENTA));
+    let map = ecs.fetch::<Map>();
+    let place_name_year_str = format!("{}, {}", map.place.get_name(), map.place.get_year());
+    ctx.print_color(2, MAP_HEIGHT - 2, RGB::named(RED), RGB::named(BLACK), place_name_year_str);
     draw_tooltips(ecs, ctx);
 }
 
