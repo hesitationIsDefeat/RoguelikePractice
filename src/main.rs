@@ -1,4 +1,4 @@
-use rltk::{GameState, Rltk, RGB, BLACK, PURPLE2, Point, GREEN};
+use rltk::{GameState, Rltk, RGB, BLACK, PURPLE2, Point, GREEN, PURPLE};
 use specs::prelude::*;
 
 mod player;
@@ -143,9 +143,9 @@ impl GameState for State {
                                     if self.ecs.read_storage::<PermanentItem>().get(item).is_none() {
                                         self.ecs.write_storage::<Stored>().remove(item);
                                     }
-                                    if self.ecs.read_storage::<Door>().get(ent).is_some() {
-                                        map.tiles[Map::xy_to_tile(pos.x, pos.y)] = TileType::Floor;
-                                        rend.fg = RGB::named(GREEN);
+                                    if self.ecs.read_storage::<Portal>().get(ent).is_some() {
+                                        map.tiles[Map::xy_to_tile(pos.x, pos.y)] = TileType::Portal;
+                                        rend.fg = RGB::named(PURPLE);
                                     }
                                     barriers_to_remove.push(ent);
                                     run_state = RunState::Game;
@@ -184,7 +184,6 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Item>();
     gs.ecs.register::<Stored>();
     gs.ecs.register::<Impassable>();
-    gs.ecs.register::<Door>();
     gs.ecs.register::<RequiresItem>();
     gs.ecs.register::<PermanentItem>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
@@ -196,7 +195,7 @@ fn main() -> rltk::BError {
 
     let mut map = Map::new_map_rooms_and_corridors(Place::School);
     gs.ecs.insert(Place::School);
-    
+
     let player_coord = (10, 10);
     let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
     let player_entity = spawner::build_player(&mut gs,

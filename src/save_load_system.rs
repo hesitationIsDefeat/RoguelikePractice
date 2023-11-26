@@ -48,7 +48,8 @@ pub fn save_game(ecs: &mut World) {
         let writer = File::create(SAVE_PATH).unwrap();
         let mut serializer = serde_json::Serializer::new(writer);
         serialize_individually!(ecs, serializer, data, Position, TargetedPosition, Renderable,
-            Player, Name, Item, Stored, Impassable, Door, RequiresItem, PermanentItem, SerializationHelper
+            Player, Name, Item, Stored, Impassable, RequiresItem, PermanentItem, SerializationHelper,
+            Portal, BelongsTo
         );
     }
 
@@ -59,7 +60,6 @@ pub fn save_game(ecs: &mut World) {
 pub fn save_exists() -> bool {
     Path::new(SAVE_PATH).exists()
 }
-
 
 pub fn load_game(ecs: &mut World) {
     {
@@ -80,7 +80,8 @@ pub fn load_game(ecs: &mut World) {
         let mut d = (&mut ecs.entities(), &mut ecs.write_storage::<SimpleMarker<SerializeMe>>(), &mut ecs.write_resource::<SimpleMarkerAllocator<SerializeMe>>());
 
         deserialize_individually!(ecs, de, d, Position, TargetedPosition, Renderable,
-            Player, Name, Item, Stored, Impassable, Door, RequiresItem, PermanentItem, SerializationHelper
+            Player, Name, Item, Stored, Impassable, RequiresItem, PermanentItem, SerializationHelper,
+            Portal, BelongsTo
         );
     }
 

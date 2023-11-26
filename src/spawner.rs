@@ -1,7 +1,7 @@
 use rltk::{BLACK, BLUE, RGB, YELLOW};
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
-use crate::{Name, Player, Position, Renderable, State, Item, Impassable, RequiresItem, Door, PermanentItem, SerializeMe, Place, BelongsTo, Portal};
+use crate::{Name, Player, Position, Renderable, State, Item, Impassable, RequiresItem, PermanentItem, SerializeMe, Place, BelongsTo, Portal};
 
 pub fn build_player(gs: &mut State, name: String, coord: (i32, i32), glyph: rltk::FontCharType, fg: RGB, bg: RGB) -> Entity {
     gs.ecs
@@ -37,7 +37,6 @@ pub fn build_door(gs: &mut State, name: String, domain: Place, coord: (i32, i32)
         .with(Portal { target })
         .with(Renderable { glyph: rltk::to_cp437(image), fg: RGB::named(BLUE), bg: RGB::named(BLACK), render_order: 1 })
         .with(Impassable {})
-        .with(Door {})
         .with(RequiresItem { key })
         .marked::<SimpleMarker<SerializeMe>>()
         .build()

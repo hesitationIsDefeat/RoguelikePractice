@@ -1,6 +1,6 @@
-use rltk::{RGB, Rltk, Point, WHITE, BLACK, MAGENTA, VirtualKeyCode, RED, GREY0, GREY3, GREY};
+use rltk::{RGB, Rltk, Point, WHITE, BLACK, MAGENTA, VirtualKeyCode, RED, GREY0, GREY3, GREY, YELLOW};
 use specs::prelude::*;
-use crate::{Door, Map, MAP_HEIGHT, MAP_WIDTH, Name, Place, Position, RequiresItem, RunState, save_load_system, SCREEN_HEIGHT, State, Stored};
+use crate::{Map, MAP_HEIGHT, MAP_WIDTH, Name, Place, Portal, Position, RequiresItem, RunState, save_load_system, SCREEN_HEIGHT, State, Stored};
 use crate::gamelog::GameLog;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -122,7 +122,7 @@ fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     for (name, position, ent) in (&names, &positions, &entities).join() {
         if position.x == mouse_pos.0 && position.y == mouse_pos.1 {
             let mut name = name.name.to_string();
-            if ecs.read_storage::<Door>().get(ent).is_some() {
+            if ecs.read_storage::<Portal>().get(ent).is_some() {
                 name += match ecs.read_storage::<RequiresItem>().get(ent).is_some() {
                     true => " (Kapali)",
                     false => " (Acik)"
@@ -179,8 +179,8 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> ItemMenuResult {
 
     let mut y = (25 - (count / 2)) as i32;
     ctx.draw_box(15, y - 2, 31, (count + 3) as i32, RGB::named(WHITE), RGB::named(BLACK));
-    ctx.print_color(18, y - 2, RGB::named(rltk::YELLOW), RGB::named(BLACK), "Esyalar");
-    ctx.print_color(18, y + count as i32 + 1, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Cikmak icin: I");
+    ctx.print_color(18, y - 2, RGB::named(YELLOW), RGB::named(BLACK), "Esyalar");
+    ctx.print_color(18, y + count as i32 + 1, RGB::named(YELLOW), RGB::named(BLACK), "Cikmak icin: I");
 
     for (_pack, name) in (&backpack, &names).join() {
         ctx.print(18, y, &name.name.to_string());
@@ -207,16 +207,16 @@ pub fn use_item(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
     let count = inventory.count();
 
     let mut y = (25 - (count / 2)) as i32;
-    ctx.draw_box(15, y - 2, 31, (count + 3) as i32, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
-    ctx.print_color(18, y - 2, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Esyalar");
-    ctx.print_color(18, y + count as i32 + 1, RGB::named(rltk::YELLOW), RGB::named(BLACK), "Cikmak icin: I");
+    ctx.draw_box(15, y - 2, 31, (count + 3) as i32, RGB::named(WHITE), RGB::named(BLACK));
+    ctx.print_color(18, y - 2, RGB::named(YELLOW), RGB::named(BLACK), "Esyalar");
+    ctx.print_color(18, y + count as i32 + 1, RGB::named(YELLOW), RGB::named(BLACK), "Cikmak icin: I");
 
     let mut j = 0;
     let mut usable: Vec<Entity> = Vec::new();
     for (item_ent, _pack, name) in (&entities, &backpack, &names).join() {
-        ctx.set(17, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437('('));
-        ctx.set(18, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97 + j as rltk::FontCharType);
-        ctx.set(19, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437(')'));
+        ctx.set(17, y, RGB::named(WHITE), RGB::named(BLACK), rltk::to_cp437('('));
+        ctx.set(18, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + j as rltk::FontCharType);
+        ctx.set(19, y, RGB::named(WHITE), RGB::named(BLACK), rltk::to_cp437(')'));
 
         ctx.print(21, y, &name.name.to_string());
         usable.push(item_ent);

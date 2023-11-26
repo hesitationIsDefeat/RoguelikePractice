@@ -14,6 +14,7 @@ pub enum TileType {
     Wall,
     Floor,
     RequiresKey,
+    Portal,
 }
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]

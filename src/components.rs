@@ -46,8 +46,6 @@ pub struct Stored {}
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Impassable {}
 
-#[derive(Component, Serialize, Deserialize, Clone)]
-pub struct Door {}
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct RequiresItem {
