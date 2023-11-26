@@ -36,15 +36,6 @@ pub struct State {
     ecs: World,
 }
 
-// Rendering
-fn render_entities(gs: &mut State, ctx: &mut Rltk) {
-    let positions = gs.ecs.read_storage::<Position>();
-    let renderables = gs.ecs.read_storage::<Renderable>();
-    for (pos, rend) in (&positions, &renderables).join() {
-        ctx.set(pos.x, pos.y, rend.fg, rend.bg, rend.glyph)
-    }
-}
-
 impl State {
     fn run_systems(&mut self) {
         let mut item_collection_system = inventory_system::ItemCollectionSystem {};
@@ -66,7 +57,24 @@ impl GameState for State {
         match run_state {
             RunState::Menu { .. } => {}
             _ => {
+                {
+                    let current_place = *self.ecs.fetch::<Place>();
+                    let map_place = self.ecs.fetch::<Map>().place;
+                    if map_place != current_place {
+                        let new_map = Map::new_map_rooms_and_corridors(&mut self.ecs, current_place);
+                        self.ecs.insert(new_map);
+                    }
+                }
+
                 draw_map(&self.ecs, ctx);
+
+                {
+                    if let Some(player_pos) = self.ecs.write_storage::<Position>().get_mut(*self.ecs.fetch::<Entity>()) {
+                        let player_point = *self.ecs.fetch::<Point>();
+                        player_pos.x = player_point.x;
+                        player_pos.y = player_point.y;
+                    }
+                }
 
                 {
                     let positions = self.ecs.read_storage::<Position>();
@@ -193,7 +201,6 @@ fn main() -> rltk::BError {
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
-    let mut map = Map::new_map_rooms_and_corridors(Place::School);
     gs.ecs.insert(Place::School);
 
     let player_coord = (10, 10);
@@ -206,9 +213,11 @@ fn main() -> rltk::BError {
                                               RGB::named(BLACK));
     let lib_key = spawner::build_key(&mut gs, String::from("Kütüphane Anahtari"), Place::School, (11, 11));
     let home_key = spawner::build_key(&mut gs, String::from("Ev Anahtari"), Place::Library, (12, 11));
-    spawner::build_door(&mut gs, String::from("Kütüphane Kapisi"), Place::School, (12, 12), Place::Library, 'D', lib_key);
-    map.adjust_tiles(&mut gs.ecs);
+    spawner::build_door(&mut gs, String::from("Kütüphane Kapisi"), Place::School, (12, 12), Place::Library, (20, 20), 'D', lib_key);
+
+    let map = Map::new_map_rooms_and_corridors(&mut gs.ecs, Place::School);
     gs.ecs.insert(map);
+
     gs.ecs.insert(log);
     gs.ecs.insert(player_entity);
     gs.ecs.insert(Point::new(player_coord.0, player_coord.1));

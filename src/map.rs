@@ -43,13 +43,14 @@ pub struct Map {
     pub tiles: Vec<TileType>,
     pub width: i32,
     pub height: i32,
+    pub place: Place,
 }
 
 impl Map {
     pub fn xy_to_tile(x: i32, y: i32) -> usize {
         (y * MAP_WIDTH + x) as usize
     }
-    pub fn adjust_tiles(&mut self, ecs: &mut World) {
+    fn adjust_tiles(&mut self, ecs: &mut World) {
         let current_place = ecs.fetch::<Place>();
         let impassables = ecs.read_storage::<Impassable>();
         let positions = ecs.read_storage::<Position>();
@@ -72,32 +73,12 @@ impl Map {
             }
         }
     }
-
-    /// Creates a horizontal corridor connecting the provided x values on the provided y coordinate
-    fn apply_horizontal_corridor(&mut self, x1: i32, x2: i32, y: i32) {
-        for x in min(x1, x2)..=max(x1, x2) {
-            let index = Map::xy_to_tile(x, y);
-            if index > 0 && index < MAP_TILES as usize {
-                self.tiles[index] = TileType::Floor;
-            }
-        }
-    }
-
-    /// Creates a vertical corridor connecting the provided y values on the provided x coordinate
-    fn apply_vertical_corridor(&mut self, y1: i32, y2: i32, x: i32) {
-        for y in min(y1, y2)..=max(y1, y2) {
-            let index = Map::xy_to_tile(x, y);
-            if index > 0 && index < MAP_TILES as usize {
-                self.tiles[index] = TileType::Floor;
-            }
-        }
-    }
-
-    pub fn new_map_rooms_and_corridors(place: Place) -> Map {
+    pub fn new_map_rooms_and_corridors(ecs: &mut World, place: Place) -> Map {
         let mut map = Map {
             tiles: vec![TileType::Wall; MAP_TILES as usize],
             width: MAP_WIDTH,
             height: MAP_HEIGHT,
+            place,
         };
 
         match place {
@@ -106,10 +87,12 @@ impl Map {
                 map.apply_room_to_map(&school);
             }
             Place::Library => {
-                let library = Rect::new(4, 4, 30, 20);
+                let library = Rect::new(10, 10, 30, 30);
                 map.apply_room_to_map(&library);
             }
         }
+
+        map.adjust_tiles(ecs);
 
         map
     }

@@ -65,6 +65,7 @@ pub struct SerializationHelper {
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Portal {
     pub target: Place,
+    pub warp_place: (i32, i32),
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]

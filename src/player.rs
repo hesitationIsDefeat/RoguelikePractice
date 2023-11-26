@@ -1,49 +1,50 @@
 use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
-use super::{Position, Player, TileType, Map, State, MAP_WIDTH, MAP_HEIGHT, Item, RunState, TargetedPosition};
+use super::{Position, Player, TileType, Map, State, MAP_WIDTH, MAP_HEIGHT, Item, RunState, TargetedPosition, Place, Portal, BelongsTo};
 
 pub fn try_to_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut player_point = ecs.write_resource::<Point>();
-    let mut positions = ecs.write_storage::<Position>();
-    let player = ecs.write_storage::<Player>();
-    let map = ecs.fetch::<Map>();
+    let positions = ecs.write_storage::<Position>();
+    let mut map = ecs.write_resource::<Map>();
 
-    for (pos, _player) in (&mut positions, &player).join() {
-        let new_x = (pos.x + delta_x).max(0).min(MAP_WIDTH - 1);
-        let new_y = (pos.y + delta_y).max(0).min(MAP_HEIGHT - 1);
-        match map.tiles[Map::xy_to_tile(new_x, new_y)] {
-            TileType::Floor => {
-                pos.x = new_x;
-                player_point.x = new_x;
-                pos.y = new_y;
-                player_point.y = new_y;
-                println!("x: {}, y: {}", pos.x, pos.y);
-            }
-            TileType::RequiresKey => {
-                let mut targeted_pos = ecs.write_resource::<TargetedPosition>();
-                targeted_pos.x = new_x;
-                targeted_pos.y = new_y;
-                return RunState::UseInventory;
-            }
-            _ => {}
+    let new_x = (player_point.x + delta_x).max(0).min(MAP_WIDTH - 1);
+    let new_y = (player_point.y + delta_y).max(0).min(MAP_HEIGHT - 1);
+    match map.tiles[Map::xy_to_tile(new_x, new_y)] {
+        TileType::Floor => {
+            player_point.x = new_x;
+            player_point.y = new_y;
+            println!("x: {}, y: {}", new_x, new_y);
         }
+        TileType::RequiresKey => {
+            let mut targeted_pos = ecs.write_resource::<TargetedPosition>();
+            targeted_pos.x = new_x;
+            targeted_pos.y = new_y;
+            return RunState::UseInventory;
+        }
+        TileType::Portal => {
+            let mut current_place = ecs.write_resource::<Place>();
+            let portals = ecs.read_storage::<Portal>();
+            let mut belongs = ecs.write_storage::<BelongsTo>();
+            let mut changed_domain = None;
+            for (bel, pos, portal) in (&belongs, &positions, &portals).join() {
+                if bel.domain == *current_place && pos.x == new_x && pos.y == new_y {
+                    *current_place = portal.target;
+                    *player_point = Point::new(portal.warp_place.0, portal.warp_place.1);
+                    changed_domain = Some(portal.target);
+                }
+            }
+            let mut player = ecs.write_storage::<Player>();
+            if let Some(domain) = changed_domain {
+                for (bel, _) in (&mut belongs, &mut player).join() {
+                    bel.domain = domain;
+                }
+            }
+        }
+        _ => {}
     }
     RunState::Game
 }
 
-pub fn collect_item(ecs: &mut World) {
-    let player_pos = ecs.fetch::<Position>();
-    let positions_read = ecs.read_storage::<Position>();
-    let mut positions_write = ecs.write_storage::<Position>();
-    let items = ecs.read_storage::<Item>();
-    let entities = ecs.entities();
-
-    for (pos, _item, item_entity) in (&positions_read, &items, &entities).join() {
-        if player_pos.x == pos.x && player_pos.y == pos.y {
-            positions_write.remove(item_entity);
-        }
-    }
-}
 
 pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     match ctx.key {

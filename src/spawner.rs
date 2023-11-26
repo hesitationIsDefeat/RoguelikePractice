@@ -28,13 +28,13 @@ pub fn build_key(gs: &mut State, name: String, domain: Place, coord: (i32, i32))
         .build()
 }
 
-pub fn build_door(gs: &mut State, name: String, domain: Place, coord: (i32, i32), target: Place, image: char, key: Entity) -> Entity {
+pub fn build_door(gs: &mut State, name: String, domain: Place, coord: (i32, i32), target: Place, warp_place: (i32, i32), image: char, key: Entity) -> Entity {
     gs.ecs
         .create_entity()
         .with(Name { name })
         .with(BelongsTo { domain })
         .with(Position { x: coord.0, y: coord.1 })
-        .with(Portal { target })
+        .with(Portal { target, warp_place })
         .with(Renderable { glyph: rltk::to_cp437(image), fg: RGB::named(BLUE), bg: RGB::named(BLACK), render_order: 1 })
         .with(Impassable {})
         .with(RequiresItem { key })
