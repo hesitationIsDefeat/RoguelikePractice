@@ -4,6 +4,7 @@ use specs::error::NoError;
 use specs_derive::*;
 use rltk::{RGB};
 use serde::{Deserialize, Serialize};
+use crate::Place;
 
 
 #[derive(Component, ConvertSaveload, Clone)]
@@ -61,5 +62,15 @@ pub struct SerializeMe;
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SerializationHelper {
     pub map: super::map::Map,
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct Portal {
+    pub target: Place,
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct BelongsTo {
+    pub domain: Place,
 }
 

@@ -18,22 +18,22 @@ pub enum TileType {
 
 #[derive(PartialEq, Clone, Serialize, Deserialize)]
 pub enum Place {
-    School(String, String),
-    Ottoman(String, String),
+    School,
+    Library,
 }
 
 impl Place {
-    pub fn get_name(&self) -> &String {
-        match self {
-            Place::School(name, _)
-            | Place::Ottoman(name, _) => name
-        }
+    pub fn get_name(&self) -> String {
+        String::from(match self {
+            Place::School => "Okul",
+            Place::Library => "Kütüphane",
+        })
     }
-    pub fn get_year(&self) -> &String {
-        match self {
-            Place::School(_, year)
-            | Place::Ottoman(_, year) => year
-        }
+    pub fn get_year(&self) -> String {
+        String::from(match self {
+            Place::School => "2023",
+            Place::Library => "2022",
+        })
     }
 }
 

@@ -185,10 +185,12 @@ fn main() -> rltk::BError {
     gs.ecs.register::<PermanentItem>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();
+    gs.ecs.register::<Portal>();
+    gs.ecs.register::<BelongsTo>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
-    let (mut map, player_coord) = Map::new_map_rooms_and_corridors(Place::School(String::from("Okul"), String::from("2023")));
+    let (mut map, player_coord) = Map::new_map_rooms_and_corridors(Place::School);
     let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
     let player_entity = spawner::build_player(&mut gs,
                                               String::from("Onat"),
@@ -205,8 +207,8 @@ fn main() -> rltk::BError {
     gs.ecs.insert(player_entity);
     gs.ecs.insert(Point::new(player_coord.0, player_coord.1));
     gs.ecs.insert(TargetedPosition { x: -1, y: -1 });
-    //gs.ecs.insert(RunState::Game);
-    gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
+    gs.ecs.insert(RunState::Game);
+    //gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
 
     rltk::main_loop(context, gs)
 }
