@@ -213,7 +213,8 @@ fn main() -> rltk::BError {
                                               RGB::named(BLACK));
     let lib_key = spawner::build_key(&mut gs, String::from("Kütüphane Anahtari"), Place::School, (11, 11));
     let home_key = spawner::build_key(&mut gs, String::from("Ev Anahtari"), Place::Library, (12, 11));
-    spawner::build_door(&mut gs, String::from("Kütüphane Kapisi"), Place::School, (12, 12), Place::Library, (20, 20), 'D', lib_key);
+    spawner::build_door(&mut gs, String::from("Kütüphane Gizli Oda Kapisi"), Place::School, (12, 12), Place::Library, (20, 20), 'D', lib_key);
+    spawner::build_portal(&mut gs, String::from("Kütüphane Kapisi"), Place::Library, (14, 14), Place::School, (15, 15), 'D');
 
     let map = Map::new_map_rooms_and_corridors(&mut gs.ecs, Place::School);
     gs.ecs.insert(map);
@@ -222,8 +223,8 @@ fn main() -> rltk::BError {
     gs.ecs.insert(player_entity);
     gs.ecs.insert(Point::new(player_coord.0, player_coord.1));
     gs.ecs.insert(TargetedPosition { x: -1, y: -1 });
-    gs.ecs.insert(RunState::Game);
-    //gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
+    //gs.ecs.insert(RunState::Game);
+    gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
 
     rltk::main_loop(context, gs)
 }
