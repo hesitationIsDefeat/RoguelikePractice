@@ -71,10 +71,14 @@ impl GameState for State {
                 {
                     let positions = self.ecs.read_storage::<Position>();
                     let renderables = self.ecs.read_storage::<Renderable>();
-                    let mut data = (&positions, &renderables).join().collect::<Vec<_>>();
+                    let belongs = self.ecs.read_storage::<BelongsTo>();
+                    let current_place = self.ecs.fetch::<Place>();
+                    let mut data = (&positions, &renderables, &belongs).join().collect::<Vec<_>>();
                     data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
-                    for (pos, rend) in data {
-                        ctx.set(pos.x, pos.y, rend.fg, rend.bg, rend.glyph)
+                    for (pos, rend, bel) in data {
+                        if bel.domain == *current_place {
+                            ctx.set(pos.x, pos.y, rend.fg, rend.bg, rend.glyph)
+                        }
                     }
                 }
                 gui::draw_ui(&self.ecs, ctx);
@@ -190,7 +194,10 @@ fn main() -> rltk::BError {
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
-    let (mut map, player_coord) = Map::new_map_rooms_and_corridors(Place::School);
+    let mut map = Map::new_map_rooms_and_corridors(Place::School);
+    gs.ecs.insert(Place::School);
+    
+    let player_coord = (10, 10);
     let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
     let player_entity = spawner::build_player(&mut gs,
                                               String::from("Onat"),
@@ -198,9 +205,9 @@ fn main() -> rltk::BError {
                                               rltk::to_cp437('@'),
                                               RGB::named(PURPLE2),
                                               RGB::named(BLACK));
-    let lib_key = spawner::build_key(&mut gs, String::from("Kütüphane Anahtari"), (41, 26));
-    let home_key = spawner::build_key(&mut gs, String::from("Ev Anahtari"), (42, 26));
-    spawner::build_door(&mut gs, String::from("Kütüphane Kapisi"), (42, 27), 'D', lib_key);
+    let lib_key = spawner::build_key(&mut gs, String::from("Kütüphane Anahtari"), Place::School, (11, 11));
+    let home_key = spawner::build_key(&mut gs, String::from("Ev Anahtari"), Place::Library, (12, 11));
+    spawner::build_door(&mut gs, String::from("Kütüphane Kapisi"), Place::School, (12, 12), Place::Library, 'D', lib_key);
     map.adjust_tiles(&mut gs.ecs);
     gs.ecs.insert(map);
     gs.ecs.insert(log);

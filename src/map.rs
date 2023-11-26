@@ -3,7 +3,7 @@ use std::fmt::Display;
 use rltk::{RGB, Rltk, BLACK};
 use serde::{Deserialize, Serialize};
 use specs::{Join, World, WorldExt};
-use super::{Impassable, Position, Rect};
+use super::{BelongsTo, Impassable, Position, Rect};
 
 pub const MAP_WIDTH: i32 = 80;
 pub const MAP_HEIGHT: i32 = 43;
@@ -16,7 +16,7 @@ pub enum TileType {
     RequiresKey,
 }
 
-#[derive(PartialEq, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum Place {
     School,
     Library,
@@ -42,7 +42,6 @@ pub struct Map {
     pub tiles: Vec<TileType>,
     pub width: i32,
     pub height: i32,
-    pub place: Place,
 }
 
 impl Map {
@@ -50,10 +49,14 @@ impl Map {
         (y * MAP_WIDTH + x) as usize
     }
     pub fn adjust_tiles(&mut self, ecs: &mut World) {
+        let current_place = ecs.fetch::<Place>();
         let impassables = ecs.read_storage::<Impassable>();
         let positions = ecs.read_storage::<Position>();
-        for (_imp, pos) in (&impassables, &positions).join() {
-            self.tiles[Map::xy_to_tile(pos.x, pos.y)] = TileType::RequiresKey;
+        let belongs = ecs.read_storage::<BelongsTo>();
+        for (_imp, pos, bel) in (&impassables, &positions, &belongs).join() {
+            if bel.domain == *current_place {
+                self.tiles[Map::xy_to_tile(pos.x, pos.y)] = TileType::RequiresKey;
+            }
         }
     }
 
@@ -89,29 +92,25 @@ impl Map {
         }
     }
 
-    pub fn new_map_rooms_and_corridors(place: Place) -> (Map, (i32, i32)) {
+    pub fn new_map_rooms_and_corridors(place: Place) -> Map {
         let mut map = Map {
             tiles: vec![TileType::Wall; MAP_TILES as usize],
             width: MAP_WIDTH,
             height: MAP_HEIGHT,
-            place,
         };
 
-        let school = Rect::new(4, 4, 12, 10);
-        let library = Rect::new(4, 30, 12, 10);
-        let home = Rect::new(29, 16, 20, 16);
-        let gym = Rect::new(62, 4, 12, 12);
+        match place {
+            Place::School => {
+                let school = Rect::new(4, 4, 30, 20);
+                map.apply_room_to_map(&school);
+            }
+            Place::Library => {
+                let library = Rect::new(4, 4, 30, 20);
+                map.apply_room_to_map(&library);
+            }
+        }
 
-        map.apply_room_to_map(&school);
-        map.apply_room_to_map(&library);
-        map.apply_room_to_map(&home);
-        map.apply_room_to_map(&gym);
-
-        map.apply_vertical_corridor(school.center.1, library.center.1, school.center.0);
-        map.apply_vertical_corridor(home.center.1, gym.center.1, gym.center.0);
-        map.apply_horizontal_corridor(school.center.0, gym.center.0, home.center.1);
-
-        (map, home.center)
+        map
     }
 }
 

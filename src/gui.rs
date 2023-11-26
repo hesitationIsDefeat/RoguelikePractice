@@ -1,6 +1,6 @@
 use rltk::{RGB, Rltk, Point, WHITE, BLACK, MAGENTA, VirtualKeyCode, RED, GREY0, GREY3, GREY};
 use specs::prelude::*;
-use crate::{Door, Map, MAP_HEIGHT, MAP_WIDTH, Name, Position, RequiresItem, RunState, save_load_system, SCREEN_HEIGHT, State, Stored};
+use crate::{Door, Map, MAP_HEIGHT, MAP_WIDTH, Name, Place, Position, RequiresItem, RunState, save_load_system, SCREEN_HEIGHT, State, Stored};
 use crate::gamelog::GameLog;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -104,8 +104,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     }
     let mouse_pos = ctx.mouse_pos();
     ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(MAGENTA));
-    let map = ecs.fetch::<Map>();
-    let place_name_year_str = format!("{}, {}", map.place.get_name(), map.place.get_year());
+    let current_place = ecs.fetch::<Place>();
+    let place_name_year_str = format!("{}, {}", current_place.get_name(), current_place.get_year());
     ctx.print_color(2, MAP_HEIGHT - 2, RGB::named(RED), RGB::named(BLACK), place_name_year_str);
     draw_tooltips(ecs, ctx);
 }
