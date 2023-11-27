@@ -1,11 +1,10 @@
-use std::cmp::{min, max};
 use std::fmt::Display;
 use rltk::{RGB, Rltk, BLACK};
 use serde::{Deserialize, Serialize};
 use specs::{Join, World, WorldExt};
-use super::{BelongsTo, Impassable, Portal, Position, Rect};
+use super::{BelongsTo, Portal, Position, Rect, RequiresItem};
 
-pub const MAP_WIDTH: i32 = 80;
+pub const MAP_WIDTH: i32 = 65;
 pub const MAP_HEIGHT: i32 = 43;
 pub const MAP_TILES: i32 = MAP_WIDTH * MAP_HEIGHT;
 
@@ -53,7 +52,7 @@ impl Map {
 
     fn adjust_tiles(&mut self, ecs: &mut World) {
         let current_place = ecs.fetch::<Place>();
-        let impassables = ecs.read_storage::<Impassable>();
+        let impassables = ecs.read_storage::<RequiresItem>();
         let positions = ecs.read_storage::<Position>();
         let belongs = ecs.read_storage::<BelongsTo>();
         let portals = ecs.read_storage::<Portal>();
@@ -145,14 +144,14 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
     let mut x: i32 = 0;
     let mut y: i32 = 0;
 
-    let mut glyph = rltk::to_cp437('-');
+    let mut glyph = rltk::to_cp437('P');
     let mut fg = RGB::named(BLACK);
 
     for tile in map.tiles.iter() {
         match tile {
             TileType::Wall => {
                 glyph = wall_glyph(&*map, x, y);
-                fg = RGB::from_f32(0.0, 1.0, 1.0);
+                fg = RGB::from_f32(0.0, 1.0, 0.0);
             }
             TileType::Floor => {
                 glyph = rltk::to_cp437('.');

@@ -1,6 +1,6 @@
 use rltk::{RGB, Rltk, Point, WHITE, BLACK, MAGENTA, VirtualKeyCode, RED, GREY0, GREY3, GREY, YELLOW};
 use specs::prelude::*;
-use crate::{Map, MAP_HEIGHT, MAP_WIDTH, Name, Place, Portal, Position, RequiresItem, RunState, save_load_system, SCREEN_HEIGHT, State, Stored};
+use crate::{Map, MAP_HEIGHT, MAP_WIDTH, Name, Place, Portal, Position, RequiresItem, RunState, save_load_system, SCREEN_HEIGHT, SCREEN_WIDTH, State, Stored};
 use crate::gamelog::GameLog;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -28,6 +28,11 @@ const TITLE_STR: &str = "OYUNCA HOS GELDIN";
 const NEW_GAME_STR: &str = "YENI OYUN";
 const LOAD_GAME_STR: &str = "OYUN YUKLE";
 const QUIT_GAME_STR: &str = "OYUNDAN CIK";
+const INVENTORY_X: i32 = MAP_WIDTH;
+const INVENTORY_Y: i32 = MAP_HEIGHT - INVENTORY_HEIGHT - 1;
+const INVENTORY_WIDTH: i32 = SCREEN_WIDTH - MAP_WIDTH - 1;
+
+const INVENTORY_HEIGHT: i32 = 29;
 
 
 pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
@@ -92,7 +97,8 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
 }
 
 pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
-    ctx.draw_box(0, MAP_HEIGHT, MAP_WIDTH - 1, SCREEN_HEIGHT - MAP_HEIGHT,
+    // CONSOLE
+    ctx.draw_box(0, MAP_HEIGHT, SCREEN_WIDTH - 1, SCREEN_HEIGHT - MAP_HEIGHT - 1,
                  RGB::named(WHITE), RGB::named(BLACK));
     let log = ecs.fetch::<GameLog>();
     let mut y = MAP_HEIGHT + 1;
@@ -102,8 +108,13 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
         }
         y += 1;
     }
+    // MOUSE
     let mouse_pos = ctx.mouse_pos();
     ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(MAGENTA));
+    // INVENTORY
+    ctx.draw_box(INVENTORY_X, INVENTORY_Y, INVENTORY_WIDTH,
+                 INVENTORY_HEIGHT, RGB::named(WHITE), RGB::named(BLACK));
+    //
     let current_place = ecs.fetch::<Place>();
     let place_name_year_str = format!("{}, {}", current_place.get_name(), current_place.get_year());
     ctx.print_color(2, MAP_HEIGHT - 2, RGB::named(RED), RGB::named(BLACK), place_name_year_str);
