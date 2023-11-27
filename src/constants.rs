@@ -28,28 +28,28 @@ pub const INVENTORY_ITEMS_X: i32 = INVENTORY_X + 5;
 // COLORS
 pub const BACKGROUND_COLOR: RGB = RGB { r: 0.0, g: 0.0, b: 0.0 };
 // COLORS MENU
-pub const MENU_SELECTED_COLOR: RGB = RGB { r: 128.0, g: 0.0, b: 0.0 };
-pub const MENU_UNSELECTED_COLOR: RGB = RGB { r: 255.0, g: 255.0, b: 255.0 };
+pub const MENU_SELECTED_COLOR: RGB = RGB { r: 128f32 / 255.0, g: 0.0, b: 0.0 };
+pub const MENU_UNSELECTED_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 // COLORS ITEMS
-pub const ITEM_KEY_COLOR: RGB = RGB { r: 240.0, g: 250.0, b: 30.0 };
-pub const ITEM_DOOR_COLOR: RGB = RGB { r: 52.0, g: 27.0, b: 212.0 };
-pub const ITEM_PORTAL_COLOR: RGB = RGB { r: 21.0, g: 246.0, b: 111.0 };
+pub const ITEM_KEY_COLOR: RGB = RGB { r: 240f32 / 255.0, g: 250f32 / 255.0, b: 30f32 / 255.0 };
+pub const ITEM_DOOR_COLOR: RGB = RGB { r: 52f32 / 255.0, g: 27f32 / 255.0, b: 212f32 / 255.0 };
+pub const ITEM_PORTAL_COLOR: RGB = RGB { r: 21f32 / 255.0, g: 246f32 / 255.0, b: 111f32 / 255.0 };
 // COLORS TILES
-pub const TILE_COLOR: RGB = RGB { r: 188.0, g: 188.0, b: 188.0 };
-pub const WALL_COLOR: RGB = RGB { r: 130.0, g: 130.0, b: 130.0 };
+pub const TILE_COLOR: RGB = RGB { r: 188f32 / 255.0, g: 188f32 / 255.0, b: 188f32 / 255.0 };
+pub const WALL_COLOR: RGB = RGB { r: 130f32 / 255.0, g: 130f32 / 255.0, b: 130f32 / 255.0 };
 // COLORS CURSOR
-pub const CURSOR_COLOR: RGB = RGB { r: 242.0, g: 47.0, b: 196.0 };
+pub const CURSOR_COLOR: RGB = RGB { r: 242f32 / 255.0, g: 47f32 / 255.0, b: 196f32 / 255.0 };
 // COLORS CONSOLE
-pub const CONSOLE_BORDER_COLOR: RGB = RGB { r: 255.0, g: 255.0, b: 255.0 };
+pub const CONSOLE_BORDER_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 pub const CONSOLE_BACKGROUND_COLOR: RGB = RGB { r: 0.0, g: 0.0, b: 0.0 };
-pub const CONSOLE_LOG_COLOR: RGB = RGB { r: 255.0, g: 255.0, b: 255.0 };
+pub const CONSOLE_LOG_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 // COLORS INVENTORY
-pub const INVENTORY_BORDER_COLOR: RGB = RGB { r: 255.0, g: 255.0, b: 255.0 };
+pub const INVENTORY_BORDER_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 pub const INVENTORY_BACKGROUND_COLOR: RGB = RGB { r: 0.0, g: 0.0, b: 0.0 };
-pub const INVENTORY_BANNER_COLOR: RGB = RGB { r: 238.0, g: 253.0, b: 28.0 };
-pub const INVENTORY_STRING_COLOR: RGB = RGB { r: 255.0, g: 255.0, b: 255.0 };
+pub const INVENTORY_BANNER_COLOR: RGB = RGB { r: 238f32 / 255.0, g: 253f32 / 255.0, b: 28f32 / 255.0 };
+pub const INVENTORY_STRING_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 // COLORS CHARACTERS
-pub const PLAYER_COLOR: RGB = RGB { r: 255.0, g: 50.0, b: 0.0 };
+pub const PLAYER_COLOR: RGB = RGB { r: 1.0, g: 50f32 / 255.0, b: 0.0 };
 
 
 

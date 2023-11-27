@@ -1,12 +1,13 @@
 use std::fmt::Display;
-use rltk::{RGB, Rltk, BLACK};
+use rltk::{RGB, Rltk, BLACK, RED};
 use serde::{Deserialize, Serialize};
 use specs::{Join, World, WorldExt};
-use crate::constants::{BACKGROUND_COLOR, MAP_HEIGHT, MAP_TILES, MAP_WIDTH};
+use crate::constants::{BACKGROUND_COLOR, MAP_HEIGHT, MAP_TILES, MAP_WIDTH, TILE_COLOR, WALL_COLOR};
 use super::{BelongsTo, Portal, Position, Rect, RequiresItem};
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
+    Space,
     Wall,
     Floor,
     RequiresKey,
@@ -67,18 +68,27 @@ impl Map {
 
     /// Takes a room, in the form of a rect, and alters the map accordingly to project the room
     fn apply_room_to_map(&mut self, room: &Rect) {
-        for x in room.x1 + 1..=room.x2 {
-            for y in room.y1 + 1..=room.y2 {
-                let index = Map::xy_to_tile(x, y);
-                if index > 0 && index < self.width as usize * self.height as usize {
-                    self.tiles[index] = TileType::Floor;
-                }
+        let mut indices_to_wall: Vec<(i32, i32)> = Vec::new();
+        indices_to_wall.push((room.x1 - 1, room.y1 - 1));
+        indices_to_wall.push((room.x1 - 1, room.y2));
+        indices_to_wall.push((room.x2, room.y1 - 1));
+        indices_to_wall.push((room.x2, room.y2));
+        for x in room.x1..=room.x2 - 1 {
+            indices_to_wall.push((x, room.y1 - 1));
+            indices_to_wall.push((x, room.y2));
+            for y in room.y1..=room.y2 - 1 {
+                indices_to_wall.push((room.x1 - 1, y));
+                indices_to_wall.push((room.x2, y));
+                self.tiles[Map::xy_to_tile(x, y)] = TileType::Floor;
             }
+        }
+        for (x, y) in indices_to_wall {
+            self.tiles[Map::xy_to_tile(x, y)] = TileType::Wall;
         }
     }
     pub fn new_map_rooms_and_corridors(ecs: &mut World, place: Place) -> Map {
         let mut map = Map {
-            tiles: vec![TileType::Wall; MAP_TILES as usize],
+            tiles: vec![TileType::Space; MAP_TILES as usize],
             width: MAP_WIDTH,
             height: MAP_HEIGHT,
             place,
@@ -141,18 +151,17 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
     let mut x: i32 = 0;
     let mut y: i32 = 0;
 
-    let mut glyph = rltk::to_cp437('P');
-    let mut fg = RGB::named(BLACK);
-
     for tile in map.tiles.iter() {
+        let mut glyph = rltk::to_cp437('P');
+        let mut fg = RGB::named(RED);
         match tile {
             TileType::Wall => {
                 glyph = wall_glyph(&*map, x, y);
-                fg = RGB::from_f32(0.0, 1.0, 0.0);
+                fg = WALL_COLOR;
             }
             TileType::Floor => {
                 glyph = rltk::to_cp437('.');
-                fg = RGB::from_f32(0.0, 0.5, 0.5);
+                fg = TILE_COLOR;
             }
             _ => {}
         }
