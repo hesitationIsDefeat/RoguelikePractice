@@ -85,23 +85,23 @@ pub fn load_game(ecs: &mut World) {
         );
     }
 
-    let mut deleteme: Option<Entity> = None;
+    let mut delete_me: Option<Entity> = None;
     {
         let entities = ecs.entities();
         let helper = ecs.read_storage::<SerializationHelper>();
         let player = ecs.read_storage::<Player>();
         let position = ecs.read_storage::<Position>();
         for (e, h) in (&entities, &helper).join() {
-            let mut worldmap = ecs.write_resource::<super::map::Map>();
-            *worldmap = h.map.clone();
-            deleteme = Some(e);
+            let mut world_map = ecs.write_resource::<super::map::Map>();
+            *world_map = h.map.clone();
+            delete_me = Some(e);
         }
         for (e, _p, pos) in (&entities, &player, &position).join() {
-            let mut ppos = ecs.write_resource::<rltk::Point>();
-            *ppos = rltk::Point::new(pos.x, pos.y);
+            let mut player_pos = ecs.write_resource::<rltk::Point>();
+            *player_pos = rltk::Point::new(pos.x, pos.y);
             let mut player_resource = ecs.write_resource::<Entity>();
             *player_resource = e;
         }
     }
-    ecs.delete_entity(deleteme.unwrap()).expect("Unable to delete helper");
+    ecs.delete_entity(delete_me.unwrap()).expect("Unable to delete helper");
 }

@@ -10,6 +10,8 @@ mod gamelog;
 mod spawner;
 mod inventory_system;
 mod save_load_system;
+mod constants;
+mod item_adjustment_system;
 
 use player::*;
 pub use components::*;
@@ -19,16 +21,11 @@ use crate::gamelog::GameLog;
 use crate::gui::{ItemMenuResult, MainMenuResult, MainMenuSelection};
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
-
-pub const SCREEN_WIDTH: i32 = 80;
-pub const SCREEN_HEIGHT: i32 = 50;
-
 #[derive(PartialEq, Clone, Copy)]
 pub enum RunState {
     Menu { menu_selection: MainMenuSelection },
     Game,
     SaveGame,
-    ShowInventory,
     UseInventory,
 }
 
@@ -40,6 +37,9 @@ impl State {
     fn run_systems(&mut self) {
         let mut item_collection_system = inventory_system::ItemCollectionSystem {};
         item_collection_system.run_now(&self.ecs);
+
+        let mut item_adjustment_system = item_adjustment_system::ItemAdjustmentSystem {};
+        item_adjustment_system.run_now(&self.ecs);
 
         self.ecs.maintain();
     }
@@ -90,6 +90,7 @@ impl GameState for State {
                     }
                 }
                 gui::draw_ui(&self.ecs, ctx);
+                gui::draw_inventory(&self.ecs, ctx);
             }
         }
 
@@ -118,11 +119,6 @@ impl GameState for State {
             RunState::SaveGame => {
                 save_load_system::save_game(&mut self.ecs);
                 run_state = RunState::Menu { menu_selection: MainMenuSelection::LoadGame }
-            }
-            RunState::ShowInventory => {
-                if gui::show_inventory(self, ctx) == ItemMenuResult::Cancel {
-                    run_state = RunState::Game;
-                }
             }
             RunState::UseInventory => {
                 let (result, item) = gui::use_item(self, ctx);
@@ -153,7 +149,6 @@ impl GameState for State {
                                     }
                                     if self.ecs.read_storage::<Portal>().get(ent).is_some() {
                                         map.tiles[Map::xy_to_tile(pos.x, pos.y)] = TileType::Portal;
-                                        rend.fg = RGB::named(PURPLE);
                                     }
                                     barriers_to_remove.push(ent);
                                     run_state = RunState::Game;
@@ -207,10 +202,7 @@ fn main() -> rltk::BError {
     let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
     let player_entity = spawner::build_player(&mut gs,
                                               String::from("Onat"),
-                                              player_coord,
-                                              rltk::to_cp437('@'),
-                                              RGB::named(PURPLE2),
-                                              RGB::named(BLACK));
+                                              player_coord);
     let lib_key = spawner::build_key(&mut gs, String::from("Kütüphane Anahtari"), Place::School, (11, 11));
     let home_key = spawner::build_key(&mut gs, String::from("Ev Anahtari"), Place::Library, (12, 11));
     spawner::build_door(&mut gs, String::from("Kütüphane Gizli Oda Kapisi"), Place::School, (12, 12), Place::Library, (20, 20), 'D', lib_key);
@@ -223,8 +215,8 @@ fn main() -> rltk::BError {
     gs.ecs.insert(player_entity);
     gs.ecs.insert(Point::new(player_coord.0, player_coord.1));
     gs.ecs.insert(TargetedPosition { x: -1, y: -1 });
-    //gs.ecs.insert(RunState::Game);
-    gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
+    gs.ecs.insert(RunState::Game);
+    //gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
 
     rltk::main_loop(context, gs)
 }

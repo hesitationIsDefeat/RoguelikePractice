@@ -1,6 +1,7 @@
 use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
-use super::{Position, Player, TileType, Map, State, MAP_WIDTH, MAP_HEIGHT, Item, RunState, TargetedPosition, Place, Portal, BelongsTo};
+use crate::constants::{MAP_HEIGHT, MAP_WIDTH};
+use super::{Position, Player, TileType, Map, State, RunState, TargetedPosition, Place, Portal, BelongsTo};
 
 pub fn try_to_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut player_point = ecs.write_resource::<Point>();
@@ -54,7 +55,6 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::Down => return try_to_move_player(0, 1, &mut gs.ecs),
             VirtualKeyCode::Left => return try_to_move_player(-1, 0, &mut gs.ecs),
             VirtualKeyCode::Right => return try_to_move_player(1, 0, &mut gs.ecs),
-            VirtualKeyCode::I => return RunState::ShowInventory,
             VirtualKeyCode::Escape => return RunState::SaveGame,
             _ => {}
         },

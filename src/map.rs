@@ -2,11 +2,8 @@ use std::fmt::Display;
 use rltk::{RGB, Rltk, BLACK};
 use serde::{Deserialize, Serialize};
 use specs::{Join, World, WorldExt};
+use crate::constants::{BACKGROUND_COLOR, MAP_HEIGHT, MAP_TILES, MAP_WIDTH};
 use super::{BelongsTo, Portal, Position, Rect, RequiresItem};
-
-pub const MAP_WIDTH: i32 = 65;
-pub const MAP_HEIGHT: i32 = 43;
-pub const MAP_TILES: i32 = MAP_WIDTH * MAP_HEIGHT;
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
@@ -159,7 +156,7 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
             }
             _ => {}
         }
-        ctx.set(x, y, fg, RGB::named(BLACK), glyph);
+        ctx.set(x, y, fg, BACKGROUND_COLOR, glyph);
         x += 1;
         if x >= MAP_WIDTH {
             x = 0;
