@@ -1,4 +1,4 @@
-use rltk::{GameState, Rltk, RGB, BLACK, PURPLE2, Point, GREEN, PURPLE};
+use rltk::{GameState, Rltk, Point};
 use specs::prelude::*;
 
 mod player;
@@ -134,13 +134,12 @@ impl GameState for State {
                         let positions = self.ecs.read_storage::<Position>();
                         let target_pos = self.ecs.fetch::<TargetedPosition>();
                         let mut requires_item = self.ecs.write_storage::<RequiresItem>();
-                        let mut renderables = self.ecs.write_storage::<Renderable>();
                         let names = self.ecs.read_storage::<Name>();
                         let mut log = self.ecs.write_resource::<GameLog>();
                         let mut map = self.ecs.write_resource::<Map>();
                         let entities = self.ecs.entities();
 
-                        for (ent, pos, req, rend) in (&entities, &positions, &requires_item, &mut renderables).join() {
+                        for (ent, pos, req) in (&entities, &positions, &requires_item).join() {
                             if pos.x == target_pos.x && pos.y == target_pos.y {
                                 if req.key == item {
                                     log.entries.push(format!("Esya kullanildi: {}", names.get(item).unwrap().name));
@@ -193,6 +192,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SerializationHelper>();
     gs.ecs.register::<Portal>();
     gs.ecs.register::<BelongsTo>();
+    gs.ecs.register::<Npc>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
@@ -205,8 +205,8 @@ fn main() -> rltk::BError {
                                               player_coord);
     let lib_key = spawner::build_key(&mut gs, String::from("Kütüphane Anahtari"), Place::School, (11, 11));
     let home_key = spawner::build_key(&mut gs, String::from("Ev Anahtari"), Place::Library, (12, 11));
-    spawner::build_door(&mut gs, String::from("Kütüphane Gizli Oda Kapisi"), Place::School, (12, 12), Place::Library, (20, 20), 'D', lib_key);
-    spawner::build_portal(&mut gs, String::from("Kütüphane Kapisi"), Place::Library, (14, 14), Place::School, (15, 15), 'D');
+    spawner::build_door(&mut gs, String::from("Kütüphane Gizli Oda Kapisi"), Place::School, (12, 12), Place::Library, (20, 20), lib_key);
+    spawner::build_portal(&mut gs, String::from("Kütüphane Kapisi"), Place::Library, (14, 14), Place::School, (15, 15));
 
     let map = Map::new_map_rooms_and_corridors(&mut gs.ecs, Place::School);
     gs.ecs.insert(map);

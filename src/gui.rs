@@ -1,6 +1,6 @@
 use rltk::{RGB, Rltk, Point, WHITE, BLACK, VirtualKeyCode, RED, GREY0, GREY3, GREY, YELLOW};
 use specs::prelude::*;
-use crate::{Map, Name, Place, Portal, Position, RequiresItem, RunState, save_load_system, State, Stored};
+use crate::{BelongsTo, Map, Name, Place, Portal, Position, RequiresItem, RunState, save_load_system, State, Stored};
 use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CURSOR_COLOR, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, LOAD_GAME_Y, MAP_HEIGHT, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NEW_GAME_Y, QUIT_GAME_STR, QUIT_GAME_Y, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y};
 use crate::gamelog::GameLog;
 
@@ -109,15 +109,17 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
 
 fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     let map = ecs.fetch::<Map>();
+    let current_place = *ecs.fetch::<Place>();
     let names = ecs.read_storage::<Name>();
     let positions = ecs.read_storage::<Position>();
+    let belongs = ecs.read_storage::<BelongsTo>();
     let entities = ecs.entities();
 
     let mouse_pos = ctx.mouse_pos();
     if mouse_pos.0 >= map.width || mouse_pos.1 >= map.height { return; }
     let mut tooltip: Vec<String> = Vec::new();
-    for (name, position, ent) in (&names, &positions, &entities).join() {
-        if position.x == mouse_pos.0 && position.y == mouse_pos.1 {
+    for (name, position, bel, ent) in (&names, &positions, &belongs, &entities).join() {
+        if bel.domain == current_place && position.x == mouse_pos.0 && position.y == mouse_pos.1 {
             let mut name = name.name.to_string();
             if ecs.read_storage::<Portal>().get(ent).is_some() {
                 name += match ecs.read_storage::<RequiresItem>().get(ent).is_some() {

@@ -17,6 +17,12 @@ pub const TITLE_STR: &str = "OYUNA HOS GELDIN";
 pub const NEW_GAME_STR: &str = "YENI OYUN";
 pub const LOAD_GAME_STR: &str = "OYUN YUKLE";
 pub const QUIT_GAME_STR: &str = "OYUNDAN CIK";
+// CHARS
+pub const PLAYER_CHAR: char = '@';
+pub const KEY_CHAR: char = 'k';
+pub const PORTAL_CHAR: char = 'p';
+pub const NPC_CHAR: char = '☺';
+
 // INVENTORY
 pub const INVENTORY_X: i32 = MAP_WIDTH;
 pub const INVENTORY_Y: i32 = MAP_HEIGHT - INVENTORY_HEIGHT - 1;
@@ -26,9 +32,9 @@ pub const INVENTORY_BANNER: &str = "Esyalar";
 pub const INVENTORY_BANNER_X: i32 = INVENTORY_X + 8;
 pub const INVENTORY_ITEMS_X: i32 = INVENTORY_X + 5;
 // COLORS
-pub const BACKGROUND_COLOR: RGB = RGB { r: 0.0, g: 0.0, b: 0.0 };
+pub const BACKGROUND_COLOR: RGB = RGB { r: 0., g: 0., b: 0. };
 // COLORS MENU
-pub const MENU_SELECTED_COLOR: RGB = RGB { r: 128f32 / 255.0, g: 0.0, b: 0.0 };
+pub const MENU_SELECTED_COLOR: RGB = RGB { r: 128f32 / 255.0, g: 0., b: 0. };
 pub const MENU_UNSELECTED_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 // COLORS ITEMS
 pub const ITEM_KEY_COLOR: RGB = RGB { r: 240f32 / 255.0, g: 250f32 / 255.0, b: 30f32 / 255.0 };
@@ -41,15 +47,16 @@ pub const WALL_COLOR: RGB = RGB { r: 130f32 / 255.0, g: 130f32 / 255.0, b: 130f3
 pub const CURSOR_COLOR: RGB = RGB { r: 242f32 / 255.0, g: 47f32 / 255.0, b: 196f32 / 255.0 };
 // COLORS CONSOLE
 pub const CONSOLE_BORDER_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
-pub const CONSOLE_BACKGROUND_COLOR: RGB = RGB { r: 0.0, g: 0.0, b: 0.0 };
+pub const CONSOLE_BACKGROUND_COLOR: RGB = RGB { r: 0., g: 0., b: 0. };
 pub const CONSOLE_LOG_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 // COLORS INVENTORY
 pub const INVENTORY_BORDER_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
-pub const INVENTORY_BACKGROUND_COLOR: RGB = RGB { r: 0.0, g: 0.0, b: 0.0 };
+pub const INVENTORY_BACKGROUND_COLOR: RGB = RGB { r: 0., g: 0., b: 0. };
 pub const INVENTORY_BANNER_COLOR: RGB = RGB { r: 238f32 / 255.0, g: 253f32 / 255.0, b: 28f32 / 255.0 };
 pub const INVENTORY_STRING_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 // COLORS CHARACTERS
-pub const PLAYER_COLOR: RGB = RGB { r: 1.0, g: 50f32 / 255.0, b: 0.0 };
+pub const PLAYER_COLOR: RGB = RGB { r: 1.0, g: 50f32 / 255.0, b: 0. };
+pub const NPC_COLOR: RGB = RGB { r: 1.0, g: 111f32 / 255.0, b: 0. };
 
 
 

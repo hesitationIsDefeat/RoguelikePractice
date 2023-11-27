@@ -62,14 +62,16 @@ pub struct SerializationHelper {
     pub map: super::map::Map,
 }
 
-#[derive(Component, Serialize, Deserialize, Clone)]
+#[derive(Component, ConvertSaveload, Clone)]
 pub struct Portal {
     pub target: Place,
     pub warp_place: (i32, i32),
 }
 
-#[derive(Component, Serialize, Deserialize, Clone)]
+#[derive(Component, ConvertSaveload, Clone)]
 pub struct BelongsTo {
     pub domain: Place,
 }
 
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct Npc {}

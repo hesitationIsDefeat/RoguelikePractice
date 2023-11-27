@@ -1,5 +1,5 @@
 use std::fmt::Display;
-use rltk::{RGB, Rltk, BLACK, RED};
+use rltk::{RGB, Rltk, RED};
 use serde::{Deserialize, Serialize};
 use specs::{Join, World, WorldExt};
 use crate::constants::{BACKGROUND_COLOR, MAP_HEIGHT, MAP_TILES, MAP_WIDTH, TILE_COLOR, WALL_COLOR};
