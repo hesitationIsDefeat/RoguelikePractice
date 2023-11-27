@@ -54,14 +54,13 @@ impl Map {
         let positions = ecs.read_storage::<Position>();
         let belongs = ecs.read_storage::<BelongsTo>();
         let portals = ecs.read_storage::<Portal>();
-        for (_portal, pos, bel) in (&portals, &positions, &belongs).join() {
+        let entities = ecs.entities();
+        for (_portal, pos, bel, ent) in (&portals, &positions, &belongs, &entities).join() {
             if bel.domain == *current_place {
-                self.tiles[Map::xy_to_tile(pos.x, pos.y)] = TileType::Portal;
-            }
-        }
-        for (_imp, pos, bel) in (&impassables, &positions, &belongs).join() {
-            if bel.domain == *current_place {
-                self.tiles[Map::xy_to_tile(pos.x, pos.y)] = TileType::RequiresKey;
+                self.tiles[Map::xy_to_tile(pos.x, pos.y)] = match impassables.contains(ent) {
+                    true => TileType::RequiresKey,
+                    false => TileType::Portal
+                }
             }
         }
     }

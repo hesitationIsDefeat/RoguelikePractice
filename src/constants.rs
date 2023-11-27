@@ -34,7 +34,7 @@ pub const INVENTORY_ITEMS_X: i32 = INVENTORY_X + 5;
 // COLORS
 pub const BACKGROUND_COLOR: RGB = RGB { r: 0., g: 0., b: 0. };
 // COLORS MENU
-pub const MENU_SELECTED_COLOR: RGB = RGB { r: 128f32 / 255.0, g: 0., b: 0. };
+pub const MENU_SELECTED_COLOR: RGB = RGB { r: 1.0, g: 0., b: 0. };
 pub const MENU_UNSELECTED_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 // COLORS ITEMS
 pub const ITEM_KEY_COLOR: RGB = RGB { r: 240f32 / 255.0, g: 250f32 / 255.0, b: 30f32 / 255.0 };

@@ -1,4 +1,4 @@
-use rltk::{RGB, Rltk, Point, WHITE, BLACK, VirtualKeyCode, RED, GREY0, GREY3, GREY, YELLOW};
+use rltk::{RGB, Rltk, Point, WHITE, BLACK, VirtualKeyCode, RED, GREY, YELLOW};
 use specs::prelude::*;
 use crate::{BelongsTo, Map, Name, Place, Portal, Position, RequiresItem, RunState, save_load_system, State, Stored};
 use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CURSOR_COLOR, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, LOAD_GAME_Y, MAP_HEIGHT, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NEW_GAME_Y, QUIT_GAME_STR, QUIT_GAME_Y, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y};
@@ -189,19 +189,17 @@ pub fn use_item(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
     let inventory = (&backpack, &names).join();
     let count = inventory.count();
 
-    let mut y = (25 - (count / 2)) as i32;
-    ctx.draw_box(15, y - 2, 31, (count + 3) as i32, RGB::named(WHITE), RGB::named(BLACK));
-    ctx.print_color(18, y - 2, RGB::named(YELLOW), RGB::named(BLACK), "Esyalar");
-    ctx.print_color(18, y + count as i32 + 1, RGB::named(YELLOW), RGB::named(BLACK), "Cikmak icin: I");
+    let mut y = 25;
+    ctx.print_color(INVENTORY_BANNER_X, y - 2, RGB::named(YELLOW), BACKGROUND_COLOR, INVENTORY_BANNER);
 
     let mut j = 0;
     let mut usable: Vec<Entity> = Vec::new();
     for (item_ent, _pack, name) in (&entities, &backpack, &names).join() {
-        ctx.set(17, y, RGB::named(WHITE), RGB::named(BLACK), rltk::to_cp437('('));
-        ctx.set(18, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + j as rltk::FontCharType);
-        ctx.set(19, y, RGB::named(WHITE), RGB::named(BLACK), rltk::to_cp437(')'));
+        ctx.set(INVENTORY_ITEMS_X - 3, y, RGB::named(WHITE), RGB::named(BLACK), rltk::to_cp437('('));
+        ctx.set(INVENTORY_ITEMS_X - 2, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + j as rltk::FontCharType);
+        ctx.set(INVENTORY_ITEMS_X - 1, y, RGB::named(WHITE), RGB::named(BLACK), rltk::to_cp437(')'));
 
-        ctx.print(21, y, &name.name.to_string());
+        ctx.print(INVENTORY_ITEMS_X, y, &name.name.to_string());
         usable.push(item_ent);
         y += 1;
         j += 1;
