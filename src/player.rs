@@ -41,6 +41,12 @@ pub fn try_to_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunSta
                 }
             }
         }
+        TileType::NPC => {
+            let mut targeted_pos = ecs.write_resource::<TargetedPosition>();
+            targeted_pos.x = new_x;
+            targeted_pos.y = new_y;
+            return RunState::InteractNpc;
+        }
         _ => {}
     }
     RunState::Game

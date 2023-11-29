@@ -27,6 +27,7 @@ pub enum RunState {
     Game,
     SaveGame,
     UseInventory,
+    InteractNpc,
 }
 
 pub struct State {
@@ -141,7 +142,7 @@ impl GameState for State {
 
                         for (ent, pos, req) in (&entities, &positions, &requires_item).join() {
                             if pos.x == target_pos.x && pos.y == target_pos.y {
-                                if req.key == item {
+                                if req.item == item {
                                     log.entries.push(format!("Esya kullanildi: {}", names.get(item).unwrap().name));
                                     if self.ecs.read_storage::<PermanentItem>().get(item).is_none() {
                                         self.ecs.write_storage::<Stored>().remove(item);
@@ -162,6 +163,7 @@ impl GameState for State {
                     }
                 }
             }
+            RunState::InteractNpc => {}
         }
 
         {
@@ -187,12 +189,15 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Stored>();
     gs.ecs.register::<Impassable>();
     gs.ecs.register::<RequiresItem>();
+    gs.ecs.register::<ContainsItem>();
     gs.ecs.register::<PermanentItem>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();
     gs.ecs.register::<Portal>();
     gs.ecs.register::<BelongsTo>();
     gs.ecs.register::<Npc>();
+    gs.ecs.register::<Objective>();
+    gs.ecs.register::<HasDialogue>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
@@ -205,18 +210,20 @@ fn main() -> rltk::BError {
                                               player_coord);
     let lib_key = spawner::build_key(&mut gs, String::from("Kütüphane Anahtari"), Place::School, (11, 11));
     let home_key = spawner::build_key(&mut gs, String::from("Ev Anahtari"), Place::Library, (12, 11));
+    let gold = spawner::build_dormant_item(&mut gs, String::from("Gold"));
     spawner::build_door(&mut gs, String::from("Kütüphane Gizli Oda Kapisi"), Place::School, (12, 12), Place::Library, (20, 20), lib_key);
     spawner::build_portal(&mut gs, String::from("Kütüphane Kapisi"), Place::Library, (14, 14), Place::School, (15, 15));
+    spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::School, (20, 20), vec!("Merhaba Onat", "Mataranasuko Sumo Samuray"), Some(home_key), Some(gold));
 
     let map = Map::new_map_rooms_and_corridors(&mut gs.ecs, Place::School);
     gs.ecs.insert(map);
-
     gs.ecs.insert(log);
     gs.ecs.insert(player_entity);
     gs.ecs.insert(Point::new(player_coord.0, player_coord.1));
     gs.ecs.insert(TargetedPosition { x: -1, y: -1 });
     gs.ecs.insert(RunState::Game);
     //gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
+    gs.ecs.insert(Objective { objective: String::from("Ev anahtarini bul") });
 
     rltk::main_loop(context, gs)
 }

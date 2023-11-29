@@ -49,7 +49,12 @@ pub struct Impassable {}
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct RequiresItem {
-    pub key: Entity,
+    pub item: Entity,
+}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct ContainsItem {
+    pub item: Entity,
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
@@ -75,3 +80,13 @@ pub struct BelongsTo {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Npc {}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct Objective {
+    pub objective: String,
+}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct HasDialogue {
+    pub dialogues: Vec<String>,
+}

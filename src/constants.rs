@@ -41,6 +41,7 @@ pub const ITEM_KEY_COLOR: RGB = RGB { r: 240f32 / 255.0, g: 250f32 / 255.0, b: 3
 pub const ITEM_DOOR_COLOR: RGB = RGB { r: 52f32 / 255.0, g: 27f32 / 255.0, b: 212f32 / 255.0 };
 pub const ITEM_PORTAL_COLOR: RGB = RGB { r: 21f32 / 255.0, g: 246f32 / 255.0, b: 111f32 / 255.0 };
 // COLORS TILES
+pub const SPACE_COLOR: RGB = RGB { r: 131f32 / 255.0, g: 131f32 / 255.0, b: 131f32 / 255.0 };
 pub const TILE_COLOR: RGB = RGB { r: 188f32 / 255.0, g: 188f32 / 255.0, b: 188f32 / 255.0 };
 pub const WALL_COLOR: RGB = RGB { r: 130f32 / 255.0, g: 130f32 / 255.0, b: 130f32 / 255.0 };
 // COLORS CURSOR

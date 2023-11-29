@@ -2,8 +2,8 @@ use std::fmt::Display;
 use rltk::{RGB, Rltk, RED};
 use serde::{Deserialize, Serialize};
 use specs::{Join, World, WorldExt};
-use crate::constants::{BACKGROUND_COLOR, MAP_HEIGHT, MAP_TILES, MAP_WIDTH, TILE_COLOR, WALL_COLOR};
-use super::{BelongsTo, Portal, Position, Rect, RequiresItem};
+use crate::constants::{BACKGROUND_COLOR, MAP_HEIGHT, MAP_TILES, MAP_WIDTH, SPACE_COLOR, TILE_COLOR, WALL_COLOR};
+use super::{BelongsTo, Npc, Portal, Position, Rect, RequiresItem};
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum TileType {
@@ -12,6 +12,7 @@ pub enum TileType {
     Floor,
     RequiresKey,
     Portal,
+    NPC,
 }
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
@@ -54,6 +55,7 @@ impl Map {
         let positions = ecs.read_storage::<Position>();
         let belongs = ecs.read_storage::<BelongsTo>();
         let portals = ecs.read_storage::<Portal>();
+        let npcs = ecs.read_storage::<Npc>();
         let entities = ecs.entities();
         for (_portal, pos, bel, ent) in (&portals, &positions, &belongs, &entities).join() {
             if bel.domain == *current_place {
@@ -61,6 +63,11 @@ impl Map {
                     true => TileType::RequiresKey,
                     false => TileType::Portal
                 }
+            }
+        }
+        for (_npc, pos, bel) in (&npcs, &positions, &belongs).join() {
+            if bel.domain == *current_place {
+                self.tiles[Map::xy_to_tile(pos.x, pos.y)] = TileType::NPC;
             }
         }
     }
@@ -151,20 +158,24 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
     let mut y: i32 = 0;
 
     for tile in map.tiles.iter() {
-        let mut glyph = rltk::to_cp437('P');
-        let mut fg = RGB::named(RED);
+        let mut glyph;
+        let mut fg;
         match tile {
             TileType::Wall => {
                 glyph = wall_glyph(&*map, x, y);
                 fg = WALL_COLOR;
+                ctx.set(x, y, fg, BACKGROUND_COLOR, glyph);
             }
             TileType::Floor => {
                 glyph = rltk::to_cp437('.');
                 fg = TILE_COLOR;
+                ctx.set(x, y, fg, BACKGROUND_COLOR, glyph);
+            }
+            TileType::Space => {
+                ctx.set_bg(x, y, SPACE_COLOR);
             }
             _ => {}
         }
-        ctx.set(x, y, fg, BACKGROUND_COLOR, glyph);
         x += 1;
         if x >= MAP_WIDTH {
             x = 0;
