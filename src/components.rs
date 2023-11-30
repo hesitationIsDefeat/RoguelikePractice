@@ -87,6 +87,9 @@ pub struct Objective {
 }
 
 #[derive(Component, ConvertSaveload, Clone)]
-pub struct HasDialogue {
-    pub dialogues: Vec<String>,
+pub struct Interaction {
+    pub dialogues: Vec<Vec<String>>,
+    pub dialogue_index: usize,
+    pub get_item_indices: Vec<usize>,
+    pub give_item_indices: Vec<usize>,
 }

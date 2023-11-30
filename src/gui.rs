@@ -1,7 +1,7 @@
 use rltk::{RGB, Rltk, Point, WHITE, BLACK, VirtualKeyCode, RED, GREY, YELLOW};
 use specs::prelude::*;
-use crate::{BelongsTo, HasDialogue, Map, Name, Npc, Place, Portal, Position, Renderable, RequiresItem, RunState, save_load_system, State, Stored, TargetedPosition};
-use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CURSOR_COLOR, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_COLOR, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_STRING_COLOR, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, LOAD_GAME_Y, MAP_HEIGHT, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NEW_GAME_Y, NPC_INTERACTION_DIALOGUE_DELTA, NPC_INTERACTION_DIALOGUE_X, NPC_INTERACTION_DIALOGUE_Y, NPC_INTERACTION_SCREEN_BG, NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_HEIGHT, NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y, PLACE_BOX_BG, PLACE_BOX_FG, PLACE_BOX_HEIGHT, PLACE_BOX_WIDTH, PLACE_BOX_X, PLACE_BOX_Y, PLACE_COLOR, PLACE_X, PLACE_Y, QUIT_GAME_STR, QUIT_GAME_Y, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y};
+use crate::{BelongsTo, Interaction, Map, Name, Npc, Place, Portal, Position, Renderable, RequiresItem, RunState, save_load_system, State, Stored, TargetedPosition};
+use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CURSOR_COLOR, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_COLOR, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_STRING_COLOR, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, LOAD_GAME_Y, MAP_HEIGHT, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NEW_GAME_Y, NPC_INTERACTION_DIALOGUE_DELTA, NPC_INTERACTION_DIALOGUE_HEADING_X, NPC_INTERACTION_DIALOGUE_HEADING_Y, NPC_INTERACTION_DIALOGUE_X, NPC_INTERACTION_DIALOGUE_Y, NPC_INTERACTION_GLYPH_X, NPC_INTERACTION_SCREEN_BG, NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_GAP_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT, NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y, PLACE_BOX_BG, PLACE_BOX_FG, PLACE_BOX_HEIGHT, PLACE_BOX_WIDTH, PLACE_BOX_X, PLACE_BOX_Y, PLACE_COLOR, PLACE_X, PLACE_Y, QUIT_GAME_STR, QUIT_GAME_Y, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y};
 use crate::gamelog::GameLog;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -23,6 +23,24 @@ pub enum MainMenuResult {
 #[derive(PartialEq, Copy, Clone)]
 pub enum NpcInteractionResult { NoResponse, Done, NextDialogue }
 
+fn print_as_paragraph(ctx: &mut Rltk, line: &str, width: usize, x_coord: i32, y_coord: i32, delta_y: i32) -> i32 {
+    let mut y = y_coord;
+    let mut current_line = String::new();
+    for word in line.split_whitespace() {
+        if current_line.len() + word.len() <= width {
+            if !current_line.is_empty() {
+                current_line.push(' ');
+            }
+        } else {
+            ctx.print(x_coord, y, &current_line);
+            current_line.clear();
+            y += delta_y;
+        }
+        current_line.push_str(word)
+    }
+    ctx.print(x_coord, y, &current_line);
+    y
+}
 
 pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
     let save_exists = save_load_system::save_exists();
@@ -233,27 +251,30 @@ pub fn interact_with_npc(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usize)
                  NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT,
                  NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_BG);
     let npcs = ecs.read_storage::<Npc>();
-    let has_dialogue = ecs.read_storage::<HasDialogue>();
+    let has_interaction = ecs.read_storage::<Interaction>();
     let positions = ecs.read_storage::<Position>();
     let names = ecs.read_storage::<Name>();
     let renderables = ecs.read_storage::<Renderable>();
     let mut target = ecs.fetch_mut::<TargetedPosition>();
-    for (_npc, dialogues, pos, name, rend) in (&npcs, &has_dialogue, &positions, &names, &renderables).join() {
+    for (_npc, interaction, pos, name, rend) in (&npcs, &has_interaction, &positions, &names, &renderables).join() {
         if pos.x == target.x && pos.y == target.y {
-            let x = NPC_INTERACTION_DIALOGUE_X;
-            let mut y;
-            y = NPC_INTERACTION_DIALOGUE_Y;
-            let completed_dialogue = &dialogues.dialogues[0..=dialogue_index];
+            if dialogue_index >= interaction.dialogues[interaction.dialogue_index].len() {
+                return NpcInteractionResult::Done;
+            }
+            let glyph_x = NPC_INTERACTION_GLYPH_X;
+            let str_x = NPC_INTERACTION_DIALOGUE_X;
+            let mut y = NPC_INTERACTION_DIALOGUE_Y;
+            let completed_dialogue = &interaction.dialogues[interaction.dialogue_index][0..=dialogue_index];
+            ctx.print(NPC_INTERACTION_DIALOGUE_HEADING_X - name.name.len() as i32, NPC_INTERACTION_DIALOGUE_HEADING_Y, &name.name);
             for dialogue in completed_dialogue {
-                ctx.print(x, y, dialogue);
+                ctx.set(glyph_x, y, rend.fg, rend.bg, rend.glyph);
+                y = print_as_paragraph(ctx, &dialogue, NPC_INTERACTION_SCREEN_GAP_WIDTH as usize,
+                                       str_x, y, NPC_INTERACTION_DIALOGUE_DELTA);
                 y += NPC_INTERACTION_DIALOGUE_DELTA;
             }
             if let Some(key) = ctx.key {
                 if key == VirtualKeyCode::Return {
-                    return match dialogue_index < dialogues.dialogues.len() - 1 {
-                        true => NpcInteractionResult::NextDialogue,
-                        false => NpcInteractionResult::Done
-                    };
+                    return NpcInteractionResult::NextDialogue;
                 }
             }
         }

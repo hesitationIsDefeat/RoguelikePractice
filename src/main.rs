@@ -207,7 +207,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<BelongsTo>();
     gs.ecs.register::<Npc>();
     gs.ecs.register::<Objective>();
-    gs.ecs.register::<HasDialogue>();
+    gs.ecs.register::<Interaction>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
@@ -219,11 +219,13 @@ fn main() -> rltk::BError {
                                               String::from("Onat"),
                                               player_coord);
     let lib_key = spawner::build_key(&mut gs, String::from("Kütüphane Anahtari"), Place::School, (11, 11));
-    let home_key = spawner::build_key(&mut gs, String::from("Ev Anahtari"), Place::Library, (12, 11));
-    let gold = spawner::build_dormant_item(&mut gs, String::from("Gold"));
+    let ancient_key = spawner::build_key(&mut gs, String::from("Eski Anahtar"), Place::Library, (12, 11));
+    let sword = spawner::build_dormant_item(&mut gs, String::from("Kilic"));
     spawner::build_door(&mut gs, String::from("Kütüphane Gizli Oda Kapisi"), Place::School, (12, 12), Place::Library, (20, 20), lib_key);
     spawner::build_portal(&mut gs, String::from("Kütüphane Kapisi"), Place::Library, (14, 14), Place::School, (15, 15));
-    spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::School, (20, 20), vec!("Merhaba Onat", "Mataranasuko Sumo Samuray"), Some(home_key), Some(gold));
+    spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::School, (20, 20),
+                       vec!(vec!("Merhaba Onat", "Bana eski anahtarı getir"), vec!("Anahtar için tesekkurler", "Sana bu kilici hediye ediyorum"), vec!("Iyi gunler")),
+                       Some(ancient_key), Some(sword), vec!(1), vec!(2));
 
     let map = Map::new_map_rooms_and_corridors(&mut gs.ecs, Place::School);
     gs.ecs.insert(map);
