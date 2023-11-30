@@ -18,7 +18,7 @@ pub use components::*;
 pub use map::*;
 use rect::*;
 use crate::gamelog::GameLog;
-use crate::gui::{ItemMenuResult, MainMenuResult, MainMenuSelection};
+use crate::gui::{ItemMenuResult, MainMenuResult, MainMenuSelection, NpcInteractionResult};
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
 #[derive(PartialEq, Clone, Copy)]
@@ -27,7 +27,7 @@ pub enum RunState {
     Game,
     SaveGame,
     UseInventory,
-    InteractNpc,
+    InteractNpc { index: usize },
 }
 
 pub struct State {
@@ -86,12 +86,11 @@ impl GameState for State {
                     data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
                     for (pos, rend, bel) in data {
                         if bel.domain == *current_place {
-                            ctx.set(pos.x, pos.y, rend.fg, rend.bg, rend.glyph)
+                            ctx.set(pos.x, pos.y, rend.fg, rend.bg, rend.glyph);
                         }
                     }
                 }
-                gui::draw_ui(&self.ecs, ctx);
-                gui::draw_inventory(&self.ecs, ctx);
+                gui::draw(&self.ecs, ctx);
             }
         }
 
@@ -163,7 +162,18 @@ impl GameState for State {
                     }
                 }
             }
-            RunState::InteractNpc => {}
+            RunState::InteractNpc { mut index } => {
+                let result = gui::interact_with_npc(&mut self.ecs, ctx, index);
+                match result {
+                    NpcInteractionResult::NoResponse => {}
+                    NpcInteractionResult::Done => {
+                        run_state = RunState::Game;
+                    }
+                    NpcInteractionResult::NextDialogue => {
+                        run_state = RunState::InteractNpc { index: index + 1 };
+                    }
+                }
+            }
         }
 
         {

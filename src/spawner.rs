@@ -69,7 +69,7 @@ pub fn build_npc(gs: &mut State, name: String, domain: Place, coord: (i32, i32),
         .with(BelongsTo { domain })
         .with(Position { x: coord.0, y: coord.1 })
         .with(Renderable { glyph: rltk::to_cp437(NPC_CHAR), fg: NPC_COLOR, bg: BACKGROUND_COLOR, render_order: 1 })
-        .with(HasDialogue { dialogues: dialogues.iter().map(|s| String::from(s)).collect() })
+        .with(HasDialogue { dialogues: dialogues.iter().map(|s| String::from(*s)).collect() })
         .marked::<SimpleMarker<SerializeMe>>();
     if let Some(item) = requires_item {
         builder = builder.with(RequiresItem { item });

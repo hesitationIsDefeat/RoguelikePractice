@@ -1,7 +1,7 @@
 use rltk::{RGB, Rltk, Point, WHITE, BLACK, VirtualKeyCode, RED, GREY, YELLOW};
 use specs::prelude::*;
-use crate::{BelongsTo, Map, Name, Place, Portal, Position, RequiresItem, RunState, save_load_system, State, Stored};
-use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CURSOR_COLOR, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, LOAD_GAME_Y, MAP_HEIGHT, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NEW_GAME_Y, QUIT_GAME_STR, QUIT_GAME_Y, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y};
+use crate::{BelongsTo, HasDialogue, Map, Name, Npc, Place, Portal, Position, Renderable, RequiresItem, RunState, save_load_system, State, Stored, TargetedPosition};
+use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CURSOR_COLOR, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_COLOR, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_STRING_COLOR, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, LOAD_GAME_Y, MAP_HEIGHT, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NEW_GAME_Y, NPC_INTERACTION_DIALOGUE_DELTA, NPC_INTERACTION_DIALOGUE_X, NPC_INTERACTION_DIALOGUE_Y, NPC_INTERACTION_SCREEN_BG, NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_HEIGHT, NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y, PLACE_BOX_BG, PLACE_BOX_FG, PLACE_BOX_HEIGHT, PLACE_BOX_WIDTH, PLACE_BOX_X, PLACE_BOX_Y, PLACE_COLOR, PLACE_X, PLACE_Y, QUIT_GAME_STR, QUIT_GAME_Y, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y};
 use crate::gamelog::GameLog;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -19,6 +19,9 @@ pub enum MainMenuResult {
     NoSelection { selected: MainMenuSelection },
     Selected { selected: MainMenuSelection },
 }
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum NpcInteractionResult { NoResponse, Done, NextDialogue }
 
 
 pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
@@ -82,7 +85,14 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
     MainMenuResult::NoSelection { selected: MainMenuSelection::NewGame }
 }
 
-pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
+pub fn draw(ecs: &World, ctx: &mut Rltk) {
+    draw_ui(ecs, ctx);
+    draw_time_and_date(ecs, ctx);
+    draw_tooltips(ecs, ctx);
+    draw_inventory(ecs, ctx);
+}
+
+fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     // CONSOLE
     ctx.draw_box(0, MAP_HEIGHT, SCREEN_WIDTH - 1, SCREEN_HEIGHT - MAP_HEIGHT - 1,
                  CONSOLE_BORDER_COLOR, CONSOLE_BACKGROUND_COLOR);
@@ -97,14 +107,13 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     // MOUSE
     let cursor_pos = ctx.mouse_pos();
     ctx.set_bg(cursor_pos.0, cursor_pos.1, CURSOR_COLOR);
-    // INVENTORY
-    ctx.draw_box(INVENTORY_X, INVENTORY_Y, INVENTORY_WIDTH,
-                 INVENTORY_HEIGHT, INVENTORY_BORDER_COLOR, INVENTORY_BACKGROUND_COLOR);
-    //
+}
+
+fn draw_time_and_date(ecs: &World, ctx: &mut Rltk) {
+    ctx.draw_box(PLACE_BOX_X, PLACE_BOX_Y, PLACE_BOX_WIDTH, PLACE_BOX_HEIGHT, PLACE_BOX_FG, PLACE_BOX_BG);
     let current_place = ecs.fetch::<Place>();
     let place_name_year_str = format!("{}, {}", current_place.get_name(), current_place.get_year());
-    ctx.print_color(2, MAP_HEIGHT - 2, RGB::named(RED), RGB::named(BLACK), place_name_year_str);
-    draw_tooltips(ecs, ctx);
+    ctx.print_color(PLACE_X, PLACE_Y, PLACE_COLOR, BACKGROUND_COLOR, place_name_year_str);
 }
 
 fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
@@ -168,15 +177,18 @@ fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
     }
 }
 
-pub fn draw_inventory(ecs: &World, ctx: &mut Rltk) {
+fn draw_inventory(ecs: &World, ctx: &mut Rltk) {
+    ctx.draw_box(INVENTORY_X, INVENTORY_Y, INVENTORY_WIDTH,
+                 INVENTORY_HEIGHT, INVENTORY_BORDER_COLOR, INVENTORY_BACKGROUND_COLOR);
+
     let names = ecs.read_storage::<Name>();
     let backpack = ecs.read_storage::<Stored>();
 
     let mut y = 25;
-    ctx.print_color(INVENTORY_BANNER_X, y - 2, RGB::named(YELLOW), BACKGROUND_COLOR, INVENTORY_BANNER);
+    ctx.print_color(INVENTORY_BANNER_X, y - 2, INVENTORY_BANNER_COLOR, BACKGROUND_COLOR, INVENTORY_BANNER);
 
     for (_pack, name) in (&backpack, &names).join() {
-        ctx.print(INVENTORY_ITEMS_X, y, &name.name.to_string());
+        ctx.print_color(INVENTORY_ITEMS_X, y, INVENTORY_STRING_COLOR, BACKGROUND_COLOR, &name.name.to_string());
         y += 2;
     }
 }
@@ -214,6 +226,39 @@ pub fn use_item(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
         };
     }
     (ItemMenuResult::NoResponse, None)
+}
+
+pub fn interact_with_npc(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usize) -> NpcInteractionResult {
+    ctx.draw_box(NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y,
+                 NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT,
+                 NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_BG);
+    let npcs = ecs.read_storage::<Npc>();
+    let has_dialogue = ecs.read_storage::<HasDialogue>();
+    let positions = ecs.read_storage::<Position>();
+    let names = ecs.read_storage::<Name>();
+    let renderables = ecs.read_storage::<Renderable>();
+    let mut target = ecs.fetch_mut::<TargetedPosition>();
+    for (_npc, dialogues, pos, name, rend) in (&npcs, &has_dialogue, &positions, &names, &renderables).join() {
+        if pos.x == target.x && pos.y == target.y {
+            let x = NPC_INTERACTION_DIALOGUE_X;
+            let mut y;
+            y = NPC_INTERACTION_DIALOGUE_Y;
+            let completed_dialogue = &dialogues.dialogues[0..=dialogue_index];
+            for dialogue in completed_dialogue {
+                ctx.print(x, y, dialogue);
+                y += NPC_INTERACTION_DIALOGUE_DELTA;
+            }
+            if let Some(key) = ctx.key {
+                if key == VirtualKeyCode::Return {
+                    return match dialogue_index < dialogues.dialogues.len() - 1 {
+                        true => NpcInteractionResult::NextDialogue,
+                        false => NpcInteractionResult::Done
+                    };
+                }
+            }
+        }
+    }
+    NpcInteractionResult::NoResponse
 }
 
 
