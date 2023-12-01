@@ -1,4 +1,4 @@
-use rltk::{GameState, Rltk, Point, VirtualKeyCode};
+use rltk::{GameState, Rltk, Point};
 use specs::prelude::*;
 
 mod player;
@@ -173,7 +173,7 @@ impl GameState for State {
                     }
                 }
             }
-            RunState::InteractNpc { mut index } => {
+            RunState::InteractNpc { index } => {
                 let result = gui::draw_npc_interaction(&mut self.ecs, ctx, index);
                 match result {
                     NpcInteractionResult::NoResponse => {}
@@ -225,9 +225,7 @@ fn main() -> rltk::BError {
 
     let player_coord = (10, 10);
     let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
-    let player_entity = spawner::build_player(&mut gs,
-                                              String::from("Onat"),
-                                              player_coord);
+    let player_entity = spawner::build_player(&mut gs, String::from("Onat"), player_coord);
     let lib_key = spawner::build_active_item(&mut gs, String::from("Kütüphane Anahtari"), Place::School, (11, 11), true);
     let ancient_key = spawner::build_active_item(&mut gs, String::from("Eski Anahtar"), Place::Library, (12, 11), true);
     let sword = spawner::build_dormant_item(&mut gs, String::from("Kilic"));

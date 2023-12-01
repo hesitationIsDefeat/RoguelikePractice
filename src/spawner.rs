@@ -26,7 +26,7 @@ pub fn build_active_item(gs: &mut State, name: String, domain: Place, coord: (i3
         .marked::<SimpleMarker<SerializeMe>>();
 
     if permanent {
-        builder = builder.with((PermanentItem {}));
+        builder = builder.with(PermanentItem {});
     }
 
     builder.build()

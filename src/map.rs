@@ -1,4 +1,3 @@
-use std::fmt::Display;
 use rltk::Rltk;
 use serde::{Deserialize, Serialize};
 use specs::{Join, World, WorldExt};
@@ -158,8 +157,8 @@ pub fn draw_map(ecs: &World, ctx: &mut Rltk) {
     let mut y: i32 = 0;
 
     for tile in map.tiles.iter() {
-        let mut glyph;
-        let mut fg;
+        let glyph;
+        let fg;
         match tile {
             TileType::Wall => {
                 glyph = wall_glyph(&*map, x, y);

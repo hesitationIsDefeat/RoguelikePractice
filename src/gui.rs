@@ -1,7 +1,7 @@
 use rltk::{RGB, Rltk, Point, WHITE, BLACK, VirtualKeyCode, RED, GREY, YELLOW};
 use specs::prelude::*;
 use crate::{BelongsTo, ContainsItem, Interaction, Map, Name, Npc, Place, Portal, Position, Renderable, RequiresItem, RunState, save_load_system, State, Stored, TargetedPosition};
-use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CREDITS_STR, CURSOR_COLOR, MENU_DELTA_Y, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_COLOR, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_DELTA_Y, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_STRING_COLOR, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, MAP_HEIGHT, MENU_ITEM_1_Y, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NPC_INTERACTION_DIALOGUE_DELTA, NPC_INTERACTION_DIALOGUE_HEADING_X, NPC_INTERACTION_DIALOGUE_HEADING_Y, NPC_INTERACTION_DIALOGUE_X, NPC_INTERACTION_DIALOGUE_Y, NPC_INTERACTION_GLYPH_X, NPC_INTERACTION_SCREEN_BG, NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_GAP_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT, NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y, PLACE_BOX_BG, PLACE_BOX_FG, PLACE_BOX_HEIGHT, PLACE_BOX_WIDTH, PLACE_BOX_X, PLACE_BOX_Y, PLACE_COLOR, PLACE_X, PLACE_Y, QUIT_GAME_STR, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y, CREDITS_1_COLOR, CREDIT_1_STR, CREDITS_THANKS_Y, CREDIT_3_Y, CREDIT_2_Y, CREDIT_1_Y, CREDITS_3_COLOR, CREDITS_2_COLOR, CREDITS_THANKS_COLOR, CREDIT_2_STR, CREDIT_3_STR, CREDITS_THANKS_STR};
+use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CREDITS_STR, CURSOR_COLOR, MENU_DELTA_Y, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_COLOR, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_DELTA_Y, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_STRING_COLOR, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, MAP_HEIGHT, MENU_ITEM_1_Y, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NPC_INTERACTION_DIALOGUE_DELTA, NPC_INTERACTION_DIALOGUE_HEADING_X, NPC_INTERACTION_DIALOGUE_HEADING_Y, NPC_INTERACTION_DIALOGUE_X, NPC_INTERACTION_DIALOGUE_Y, NPC_INTERACTION_GLYPH_X, NPC_INTERACTION_SCREEN_BG, NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_GAP_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT, NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y, QUIT_GAME_STR, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y, CREDITS_1_COLOR, CREDIT_1_STR, CREDITS_THANKS_Y, CREDIT_3_Y, CREDIT_2_Y, CREDIT_1_Y, CREDITS_3_COLOR, CREDITS_2_COLOR, CREDITS_THANKS_COLOR, CREDIT_2_STR, CREDIT_3_STR, CREDITS_THANKS_STR, PLACE_DATE_BOX_X, PLACE_DATE_BOX_Y, PLACE_DATE_BOX_WIDTH, PLACE_DATE_BOX_HEIGHT, PLACE_DATE_BOX_FG, PLACE_DATE_BOX_BG, PLACE_DATE_X, PLACE_DATE_Y, PLACE_DATE_COLOR, CONSOLE_LOG_COLOR};
 use crate::gamelog::GameLog;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -130,7 +130,7 @@ fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     let mut y = MAP_HEIGHT + 1;
     for s in log.entries.iter().rev() {
         if y < SCREEN_HEIGHT - 1 {
-            ctx.print(2, y, s);
+            ctx.print_color(2, y, CONSOLE_LOG_COLOR, CONSOLE_BACKGROUND_COLOR, s);
         }
         y += 1;
     }
@@ -140,10 +140,10 @@ fn draw_ui(ecs: &World, ctx: &mut Rltk) {
 }
 
 fn draw_time_and_date(ecs: &World, ctx: &mut Rltk) {
-    ctx.draw_box(PLACE_BOX_X, PLACE_BOX_Y, PLACE_BOX_WIDTH, PLACE_BOX_HEIGHT, PLACE_BOX_FG, PLACE_BOX_BG);
+    ctx.draw_box(PLACE_DATE_BOX_X, PLACE_DATE_BOX_Y, PLACE_DATE_BOX_WIDTH, PLACE_DATE_BOX_HEIGHT, PLACE_DATE_BOX_FG, PLACE_DATE_BOX_BG);
     let current_place = ecs.fetch::<Place>();
     let place_name_year_str = format!("{}, {}", current_place.get_name(), current_place.get_year());
-    ctx.print_color(PLACE_X, PLACE_Y, PLACE_COLOR, BACKGROUND_COLOR, place_name_year_str);
+    ctx.print_color(PLACE_DATE_X, PLACE_DATE_Y, PLACE_DATE_COLOR, BACKGROUND_COLOR, place_name_year_str);
 }
 
 fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
@@ -266,21 +266,34 @@ pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usi
     let positions = ecs.read_storage::<Position>();
     let names = ecs.read_storage::<Name>();
     let renderables = ecs.read_storage::<Renderable>();
-    let mut log = ecs.write_resource::<GameLog>();
     let contains_item = ecs.read_storage::<ContainsItem>();
+    let mut log = ecs.write_resource::<GameLog>();
     let mut has_interaction = ecs.write_storage::<Interaction>();
     let mut target = ecs.fetch_mut::<TargetedPosition>();
     let mut stored_items = ecs.write_storage::<Stored>();
-    for (_npc, interaction, pos, name, rend, item) in (&npcs, &mut has_interaction, &positions, &names, &renderables, &contains_item).join() {
+    let mut requires_item = ecs.write_storage::<RequiresItem>();
+    for (_npc, interaction, pos, name, rend, cont, req) in (&npcs, &mut has_interaction, &positions, &names, &renderables, &contains_item, &mut requires_item).join() {
         if pos.x == target.x && pos.y == target.y {
+            let mut increment_dialogue_index = interaction.dialogue_index < interaction.dialogues.len() - 1;
             if dialogue_index >= interaction.dialogues[interaction.dialogue_index].len() {
                 if interaction.give_item_indices.contains(&interaction.dialogue_index) {
-                    stored_items.insert(item.item, Stored {}).expect("WOW");
-                    log.entries.push(format!("Esyayi aldin: {}", names.get(item.item).unwrap().name))
+                    stored_items.insert(cont.item, Stored {}).expect("Error during inserting into stored items");
+                    log.entries.push(format!("Esyayi aldin: {}", names.get(cont.item).unwrap().name))
                 }
-                if interaction.dialogue_index < interaction.dialogues.len() - 1 {
+                if interaction.get_item_indices.contains(&interaction.dialogue_index) {
+                    if stored_items.contains(req.item) {
+                        stored_items.remove(req.item);
+                        log.entries.push(format!("Esya kullanildi: {}", names.get(req.item).unwrap().name))
+                    } else {
+                        log.entries.push(format!("Gerekli esyan yok"));
+                        increment_dialogue_index = false;
+                    }
+                }
+                if increment_dialogue_index {
                     interaction.dialogue_index += 1;
                 }
+                target.x = -1;
+                target.y = -1;
                 return NpcInteractionResult::Done;
             }
             let glyph_x = NPC_INTERACTION_GLYPH_X;

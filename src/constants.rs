@@ -31,12 +31,12 @@ pub const KEY_CHAR: char = '♪';
 pub const PORTAL_CHAR: char = 'Ω';
 pub const NPC_CHAR: char = '☺';
 // PLACE DATE
-pub const PLACE_BOX_X: i32 = INVENTORY_X;
-pub const PLACE_BOX_Y: i32 = INVENTORY_Y - 3;
-pub const PLACE_BOX_WIDTH: i32 = INVENTORY_WIDTH;
-pub const PLACE_BOX_HEIGHT: i32 = 2;
-pub const PLACE_X: i32 = PLACE_BOX_X + 2;
-pub const PLACE_Y: i32 = PLACE_BOX_Y + 1;
+pub const PLACE_DATE_BOX_X: i32 = INVENTORY_X;
+pub const PLACE_DATE_BOX_Y: i32 = INVENTORY_Y - 3;
+pub const PLACE_DATE_BOX_WIDTH: i32 = INVENTORY_WIDTH;
+pub const PLACE_DATE_BOX_HEIGHT: i32 = 2;
+pub const PLACE_DATE_X: i32 = PLACE_DATE_BOX_X + 2;
+pub const PLACE_DATE_Y: i32 = PLACE_DATE_BOX_Y + 1;
 // INVENTORY
 pub const INVENTORY_X: i32 = MAP_WIDTH;
 pub const INVENTORY_Y: i32 = MAP_HEIGHT - INVENTORY_HEIGHT - 1;
@@ -86,10 +86,9 @@ pub const CONSOLE_BORDER_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 pub const CONSOLE_BACKGROUND_COLOR: RGB = RGB { r: 0., g: 0., b: 0. };
 pub const CONSOLE_LOG_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 // COLORS PLACE DATE
-pub const PLACE_BOX_FG: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
-pub const PLACE_BOX_BG: RGB = RGB { r: 0., g: 0., b: 0. };
-pub const PLACE_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
-pub const DATE_COLOR: RGB = RGB { r: 0., g: 0., b: 0. };
+pub const PLACE_DATE_BOX_FG: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
+pub const PLACE_DATE_BOX_BG: RGB = RGB { r: 0., g: 0., b: 0. };
+pub const PLACE_DATE_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 // COLORS INVENTORY
 pub const INVENTORY_BORDER_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 pub const INVENTORY_BACKGROUND_COLOR: RGB = RGB { r: 0., g: 0., b: 0. };

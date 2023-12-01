@@ -6,7 +6,7 @@ use super::{Position, Player, TileType, Map, State, RunState, TargetedPosition, 
 pub fn try_to_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut player_point = ecs.write_resource::<Point>();
     let positions = ecs.write_storage::<Position>();
-    let mut map = ecs.write_resource::<Map>();
+    let map = ecs.write_resource::<Map>();
 
     let new_x = (player_point.x + delta_x).max(0).min(MAP_WIDTH - 1);
     let new_y = (player_point.y + delta_y).max(0).min(MAP_HEIGHT - 1);
