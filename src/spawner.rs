@@ -15,17 +15,21 @@ pub fn build_player(gs: &mut State, name: String, coord: (i32, i32)) -> Entity {
         .build()
 }
 
-pub fn build_key(gs: &mut State, name: String, domain: Place, coord: (i32, i32)) -> Entity {
-    gs.ecs
+pub fn build_active_item(gs: &mut State, name: String, domain: Place, coord: (i32, i32), permanent: bool) -> Entity {
+    let mut builder = gs.ecs
         .create_entity()
         .with(Name { name })
         .with(BelongsTo { domain })
         .with(Position { x: coord.0, y: coord.1 })
         .with(Renderable { glyph: rltk::to_cp437(KEY_CHAR), fg: ITEM_KEY_COLOR, bg: BACKGROUND_COLOR, render_order: 1 })
         .with(Item {})
-        .with(PermanentItem {})
-        .marked::<SimpleMarker<SerializeMe>>()
-        .build()
+        .marked::<SimpleMarker<SerializeMe>>();
+
+    if permanent {
+        builder = builder.with((PermanentItem {}));
+    }
+
+    builder.build()
 }
 
 fn build_door_or_portal(gs: &mut State, name: String, domain: Place, coord: (i32, i32), target: Place, warp_place: (i32, i32), key: Option<Entity>) -> Entity {

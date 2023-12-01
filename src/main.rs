@@ -1,4 +1,4 @@
-use rltk::{GameState, Rltk, Point};
+use rltk::{GameState, Rltk, Point, VirtualKeyCode};
 use specs::prelude::*;
 
 mod player;
@@ -28,6 +28,7 @@ pub enum RunState {
     SaveGame,
     UseInventory,
     InteractNpc { index: usize },
+    Credits,
 }
 
 pub struct State {
@@ -57,6 +58,7 @@ impl GameState for State {
 
         match run_state {
             RunState::Menu { .. } => {}
+            RunState::Credits => {}
             _ => {
                 {
                     let current_place = *self.ecs.fetch::<Place>();
@@ -96,7 +98,7 @@ impl GameState for State {
 
         match run_state {
             RunState::Menu { .. } => {
-                let result = gui::main_menu(self, ctx);
+                let result = gui::draw_main_menu(self, ctx);
                 match result {
                     MainMenuResult::NoSelection { selected } => run_state = RunState::Menu { menu_selection: selected },
                     MainMenuResult::Selected { selected } => {
@@ -106,9 +108,18 @@ impl GameState for State {
                                 save_load_system::load_game(&mut self.ecs);
                                 run_state = RunState::Game;
                             }
-                            MainMenuSelection::QuitGame => std::process::exit(0)
+                            MainMenuSelection::QuitGame => std::process::exit(0),
+                            MainMenuSelection::Credits => {
+                                run_state = RunState::Credits;
+                            }
                         }
                     }
+                }
+            }
+            RunState::Credits => {
+                gui::draw_credits(ctx);
+                if let Some(_) = ctx.key {
+                    run_state = RunState::Menu { menu_selection: MainMenuSelection::Credits };
                 }
             }
             RunState::Game => {
@@ -121,7 +132,7 @@ impl GameState for State {
                 run_state = RunState::Menu { menu_selection: MainMenuSelection::LoadGame }
             }
             RunState::UseInventory => {
-                let (result, item) = gui::use_item(self, ctx);
+                let (result, item) = gui::draw_use_item(self, ctx);
                 match result {
                     ItemMenuResult::NoResponse => {}
                     ItemMenuResult::Cancel => {
@@ -163,7 +174,7 @@ impl GameState for State {
                 }
             }
             RunState::InteractNpc { mut index } => {
-                let result = gui::interact_with_npc(&mut self.ecs, ctx, index);
+                let result = gui::draw_npc_interaction(&mut self.ecs, ctx, index);
                 match result {
                     NpcInteractionResult::NoResponse => {}
                     NpcInteractionResult::Done => {
@@ -210,7 +221,6 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Interaction>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
-
     gs.ecs.insert(Place::School);
 
     let player_coord = (10, 10);
@@ -218,14 +228,14 @@ fn main() -> rltk::BError {
     let player_entity = spawner::build_player(&mut gs,
                                               String::from("Onat"),
                                               player_coord);
-    let lib_key = spawner::build_key(&mut gs, String::from("Kütüphane Anahtari"), Place::School, (11, 11));
-    let ancient_key = spawner::build_key(&mut gs, String::from("Eski Anahtar"), Place::Library, (12, 11));
+    let lib_key = spawner::build_active_item(&mut gs, String::from("Kütüphane Anahtari"), Place::School, (11, 11), true);
+    let ancient_key = spawner::build_active_item(&mut gs, String::from("Eski Anahtar"), Place::Library, (12, 11), true);
     let sword = spawner::build_dormant_item(&mut gs, String::from("Kilic"));
     spawner::build_door(&mut gs, String::from("Kütüphane Gizli Oda Kapisi"), Place::School, (12, 12), Place::Library, (20, 20), lib_key);
     spawner::build_portal(&mut gs, String::from("Kütüphane Kapisi"), Place::Library, (14, 14), Place::School, (15, 15));
     spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::School, (20, 20),
                        vec!(vec!("Merhaba Onat", "Bana eski anahtarı getir"), vec!("Anahtar için tesekkurler", "Sana bu kilici hediye ediyorum"), vec!("Iyi gunler")),
-                       Some(ancient_key), Some(sword), vec!(1), vec!(2));
+                       Some(ancient_key), Some(sword), vec!(0), vec!(1));
 
     let map = Map::new_map_rooms_and_corridors(&mut gs.ecs, Place::School);
     gs.ecs.insert(map);
@@ -234,8 +244,8 @@ fn main() -> rltk::BError {
     gs.ecs.insert(Point::new(player_coord.0, player_coord.1));
     gs.ecs.insert(TargetedPosition { x: -1, y: -1 });
     gs.ecs.insert(RunState::Game);
-    //gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
-    gs.ecs.insert(Objective { objective: String::from("Ev anahtarini bul") });
+    gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
+    //gs.ecs.insert(Objective { objective: String::from("Ev anahtarini bul") });
 
     rltk::main_loop(context, gs)
 }

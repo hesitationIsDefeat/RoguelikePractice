@@ -1,7 +1,7 @@
 use rltk::{RGB, Rltk, Point, WHITE, BLACK, VirtualKeyCode, RED, GREY, YELLOW};
 use specs::prelude::*;
-use crate::{BelongsTo, Interaction, Map, Name, Npc, Place, Portal, Position, Renderable, RequiresItem, RunState, save_load_system, State, Stored, TargetedPosition};
-use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CURSOR_COLOR, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_COLOR, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_STRING_COLOR, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, LOAD_GAME_Y, MAP_HEIGHT, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NEW_GAME_Y, NPC_INTERACTION_DIALOGUE_DELTA, NPC_INTERACTION_DIALOGUE_HEADING_X, NPC_INTERACTION_DIALOGUE_HEADING_Y, NPC_INTERACTION_DIALOGUE_X, NPC_INTERACTION_DIALOGUE_Y, NPC_INTERACTION_GLYPH_X, NPC_INTERACTION_SCREEN_BG, NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_GAP_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT, NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y, PLACE_BOX_BG, PLACE_BOX_FG, PLACE_BOX_HEIGHT, PLACE_BOX_WIDTH, PLACE_BOX_X, PLACE_BOX_Y, PLACE_COLOR, PLACE_X, PLACE_Y, QUIT_GAME_STR, QUIT_GAME_Y, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y};
+use crate::{BelongsTo, ContainsItem, Interaction, Map, Name, Npc, Place, Portal, Position, Renderable, RequiresItem, RunState, save_load_system, State, Stored, TargetedPosition};
+use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CREDITS_STR, CURSOR_COLOR, MENU_DELTA_Y, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_COLOR, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_DELTA_Y, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_STRING_COLOR, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, MAP_HEIGHT, MENU_ITEM_1_Y, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NPC_INTERACTION_DIALOGUE_DELTA, NPC_INTERACTION_DIALOGUE_HEADING_X, NPC_INTERACTION_DIALOGUE_HEADING_Y, NPC_INTERACTION_DIALOGUE_X, NPC_INTERACTION_DIALOGUE_Y, NPC_INTERACTION_GLYPH_X, NPC_INTERACTION_SCREEN_BG, NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_GAP_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT, NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y, PLACE_BOX_BG, PLACE_BOX_FG, PLACE_BOX_HEIGHT, PLACE_BOX_WIDTH, PLACE_BOX_X, PLACE_BOX_Y, PLACE_COLOR, PLACE_X, PLACE_Y, QUIT_GAME_STR, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y, CREDITS_1_COLOR, CREDIT_1_STR, CREDITS_THANKS_Y, CREDIT_3_Y, CREDIT_2_Y, CREDIT_1_Y, CREDITS_3_COLOR, CREDITS_2_COLOR, CREDITS_THANKS_COLOR, CREDIT_2_STR, CREDIT_3_STR, CREDITS_THANKS_STR};
 use crate::gamelog::GameLog;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -12,6 +12,7 @@ pub enum MainMenuSelection {
     NewGame,
     LoadGame,
     QuitGame,
+    Credits,
 }
 
 #[derive(PartialEq, Copy, Clone)]
@@ -42,56 +43,67 @@ fn print_as_paragraph(ctx: &mut Rltk, line: &str, width: usize, x_coord: i32, y_
     y
 }
 
-pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
+pub fn draw_main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
     let save_exists = save_load_system::save_exists();
     let state = gs.ecs.fetch::<RunState>();
+
     ctx.print_color_centered(TITLE_Y, RGB::named(RED), RGB::named(BLACK), TITLE_STR);
 
+    let mut y = MENU_ITEM_1_Y;
+
     if let RunState::Menu { menu_selection: selected } = *state {
-        if selected == MainMenuSelection::NewGame {
-            ctx.print_color_centered(NEW_GAME_Y, MENU_SELECTED_COLOR, BACKGROUND_COLOR, NEW_GAME_STR);
-        } else {
-            ctx.print_color_centered(NEW_GAME_Y, MENU_UNSELECTED_COLOR, BACKGROUND_COLOR, NEW_GAME_STR);
-        }
+        ctx.print_color_centered(y, match selected == MainMenuSelection::NewGame {
+            true => MENU_SELECTED_COLOR,
+            false => MENU_UNSELECTED_COLOR
+        }, BACKGROUND_COLOR, NEW_GAME_STR);
+
         if save_exists {
-            if selected == MainMenuSelection::LoadGame {
-                ctx.print_color_centered(LOAD_GAME_Y, MENU_SELECTED_COLOR, BACKGROUND_COLOR, LOAD_GAME_STR);
-            } else {
-                ctx.print_color_centered(LOAD_GAME_Y, MENU_UNSELECTED_COLOR, BACKGROUND_COLOR, LOAD_GAME_STR);
-            }
+            y += MENU_DELTA_Y;
+            ctx.print_color_centered(y, match selected == MainMenuSelection::LoadGame {
+                true => MENU_SELECTED_COLOR,
+                false => MENU_UNSELECTED_COLOR
+            }, BACKGROUND_COLOR, LOAD_GAME_STR);
         }
-        if selected == MainMenuSelection::QuitGame {
-            ctx.print_color_centered(QUIT_GAME_Y, MENU_SELECTED_COLOR, BACKGROUND_COLOR, QUIT_GAME_STR);
-        } else {
-            ctx.print_color_centered(QUIT_GAME_Y, MENU_UNSELECTED_COLOR, BACKGROUND_COLOR, QUIT_GAME_STR);
-        }
+
+        y += MENU_DELTA_Y;
+        ctx.print_color_centered(y, match selected == MainMenuSelection::QuitGame {
+            true => MENU_SELECTED_COLOR,
+            false => MENU_UNSELECTED_COLOR
+        }, BACKGROUND_COLOR, QUIT_GAME_STR);
+
+        y += MENU_DELTA_Y;
+        ctx.print_color_centered(y, match selected == MainMenuSelection::Credits {
+            true => MENU_SELECTED_COLOR,
+            false => MENU_UNSELECTED_COLOR
+        }, BACKGROUND_COLOR, CREDITS_STR);
+
 
         return match ctx.key {
             None => MainMenuResult::NoSelection { selected },
             Some(key) => {
                 match key {
                     VirtualKeyCode::Up => {
-                        let new_selection;
-                        match selected {
-                            MainMenuSelection::NewGame => new_selection = MainMenuSelection::QuitGame,
-                            MainMenuSelection::LoadGame => new_selection = MainMenuSelection::NewGame,
-                            MainMenuSelection::QuitGame => new_selection = match save_exists {
+                        let new_selection = match selected {
+                            MainMenuSelection::NewGame => MainMenuSelection::Credits,
+                            MainMenuSelection::LoadGame => MainMenuSelection::NewGame,
+                            MainMenuSelection::QuitGame => match save_exists {
                                 true => MainMenuSelection::LoadGame,
                                 false => MainMenuSelection::NewGame
                             }
-                        }
+                            MainMenuSelection::Credits => MainMenuSelection::QuitGame
+                        };
                         MainMenuResult::NoSelection { selected: new_selection }
                     }
                     VirtualKeyCode::Down => {
-                        let new_selection;
-                        match selected {
-                            MainMenuSelection::NewGame => new_selection = match save_exists {
+                        let new_selection = match selected {
+                            MainMenuSelection::NewGame => match save_exists {
                                 true => MainMenuSelection::LoadGame,
                                 false => MainMenuSelection::QuitGame
                             },
-                            MainMenuSelection::LoadGame => new_selection = MainMenuSelection::QuitGame,
-                            MainMenuSelection::QuitGame => new_selection = MainMenuSelection::NewGame,
-                        }
+                            MainMenuSelection::LoadGame => MainMenuSelection::QuitGame,
+                            MainMenuSelection::QuitGame => MainMenuSelection::Credits,
+                            MainMenuSelection::Credits => MainMenuSelection::NewGame
+                        };
                         MainMenuResult::NoSelection { selected: new_selection }
                     }
                     VirtualKeyCode::Return => MainMenuResult::Selected { selected },
@@ -207,11 +219,11 @@ fn draw_inventory(ecs: &World, ctx: &mut Rltk) {
 
     for (_pack, name) in (&backpack, &names).join() {
         ctx.print_color(INVENTORY_ITEMS_X, y, INVENTORY_STRING_COLOR, BACKGROUND_COLOR, &name.name.to_string());
-        y += 2;
+        y += INVENTORY_DELTA_Y;
     }
 }
 
-pub fn use_item(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
+pub fn draw_use_item(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
     let names = gs.ecs.read_storage::<Name>();
     let backpack = gs.ecs.read_storage::<Stored>();
     let entities = gs.ecs.entities();
@@ -231,7 +243,7 @@ pub fn use_item(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
 
         ctx.print(INVENTORY_ITEMS_X, y, &name.name.to_string());
         usable.push(item_ent);
-        y += 1;
+        y += INVENTORY_DELTA_Y;
         j += 1;
     }
 
@@ -246,19 +258,27 @@ pub fn use_item(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entit
     (ItemMenuResult::NoResponse, None)
 }
 
-pub fn interact_with_npc(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usize) -> NpcInteractionResult {
+pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usize) -> NpcInteractionResult {
     ctx.draw_box(NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y,
                  NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT,
                  NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_BG);
     let npcs = ecs.read_storage::<Npc>();
-    let has_interaction = ecs.read_storage::<Interaction>();
     let positions = ecs.read_storage::<Position>();
     let names = ecs.read_storage::<Name>();
     let renderables = ecs.read_storage::<Renderable>();
+    let contains_item = ecs.read_storage::<ContainsItem>();
+    let mut has_interaction = ecs.write_storage::<Interaction>();
     let mut target = ecs.fetch_mut::<TargetedPosition>();
-    for (_npc, interaction, pos, name, rend) in (&npcs, &has_interaction, &positions, &names, &renderables).join() {
+    let mut stored_items = ecs.write_storage::<Stored>();
+    for (_npc, interaction, pos, name, rend, item) in (&npcs, &mut has_interaction, &positions, &names, &renderables, &contains_item).join() {
         if pos.x == target.x && pos.y == target.y {
             if dialogue_index >= interaction.dialogues[interaction.dialogue_index].len() {
+                if interaction.give_item_indices.contains(&interaction.dialogue_index) {
+                    stored_items.insert(item.item, Stored {}).expect("WOW");
+                }
+                if interaction.dialogue_index < interaction.dialogues.len() - 1 {
+                    interaction.dialogue_index += 1;
+                }
                 return NpcInteractionResult::Done;
             }
             let glyph_x = NPC_INTERACTION_GLYPH_X;
@@ -280,6 +300,13 @@ pub fn interact_with_npc(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usize)
         }
     }
     NpcInteractionResult::NoResponse
+}
+
+pub fn draw_credits(ctx: &mut Rltk) {
+    ctx.print_color_centered(CREDIT_1_Y, CREDITS_1_COLOR, BACKGROUND_COLOR, CREDIT_1_STR);
+    ctx.print_color_centered(CREDIT_2_Y, CREDITS_2_COLOR, BACKGROUND_COLOR, CREDIT_2_STR);
+    ctx.print_color_centered(CREDIT_3_Y, CREDITS_3_COLOR, BACKGROUND_COLOR, CREDIT_3_STR);
+    ctx.print_color_centered(CREDITS_THANKS_Y, CREDITS_THANKS_COLOR, BACKGROUND_COLOR, CREDITS_THANKS_STR);
 }
 
 
