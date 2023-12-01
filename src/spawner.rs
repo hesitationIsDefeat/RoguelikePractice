@@ -94,5 +94,6 @@ pub fn build_dormant_item(gs: &mut State, name: String) -> Entity {
     gs.ecs
         .create_entity()
         .with(Name { name })
+        .marked::<SimpleMarker<SerializeMe>>()
         .build()
 }

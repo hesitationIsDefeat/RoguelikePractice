@@ -266,6 +266,7 @@ pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usi
     let positions = ecs.read_storage::<Position>();
     let names = ecs.read_storage::<Name>();
     let renderables = ecs.read_storage::<Renderable>();
+    let mut log = ecs.write_resource::<GameLog>();
     let contains_item = ecs.read_storage::<ContainsItem>();
     let mut has_interaction = ecs.write_storage::<Interaction>();
     let mut target = ecs.fetch_mut::<TargetedPosition>();
@@ -275,6 +276,7 @@ pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usi
             if dialogue_index >= interaction.dialogues[interaction.dialogue_index].len() {
                 if interaction.give_item_indices.contains(&interaction.dialogue_index) {
                     stored_items.insert(item.item, Stored {}).expect("WOW");
+                    log.entries.push(format!("Esyayi aldin: {}", names.get(item.item).unwrap().name))
                 }
                 if interaction.dialogue_index < interaction.dialogues.len() - 1 {
                     interaction.dialogue_index += 1;
