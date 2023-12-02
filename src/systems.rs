@@ -1,7 +1,26 @@
 use rltk::Point;
 use specs::{Entities, Join, ReadExpect, ReadStorage, System, WriteExpect, WriteStorage};
+use crate::{BelongsTo, Item, Name, Place, Portal, Position, Renderable, RequiresItem, Stored};
+use crate::constants::ITEM_PORTAL_COLOR;
 use crate::gamelog::GameLog;
-use crate::{BelongsTo, Item, Name, Place, Position, Stored};
+
+pub struct ItemAdjustmentSystem {}
+
+impl<'a> System<'a> for ItemAdjustmentSystem {
+    type SystemData = (
+        Entities<'a>,
+        ReadStorage<'a, RequiresItem>,
+        ReadStorage<'a, Portal>,
+        WriteStorage<'a, Renderable>,
+    );
+
+    fn run(&mut self, data: Self::SystemData) {
+        let (entities, doors, portals, mut renderables) = data;
+        for (_, _, render) in (&entities, &portals, &mut renderables).join().filter(|(e, _, _)| !doors.contains(*e)) {
+            render.fg = ITEM_PORTAL_COLOR;
+        }
+    }
+}
 
 pub struct ItemCollectionSystem {}
 

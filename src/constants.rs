@@ -37,7 +37,7 @@ pub const OBJECTIVE_BOX_WIDTH: i32 = INVENTORY_WIDTH;
 pub const OBJECTIVE_BOX_GAP: i32 = OBJECTIVE_BOX_WIDTH - 2 * OBJECTIVE_DELTA_Y;
 pub const OBJECTIVE_BOX_HEIGHT: i32 = 10;
 pub const OBJECTIVE_X: i32 = OBJECTIVE_BOX_X + 2;
-pub const OBJECTIVE_Y: i32 = OBJECTIVE_BOX_Y + 1;
+pub const OBJECTIVE_Y: i32 = OBJECTIVE_BOX_Y + 2;
 pub const OBJECTIVE_DELTA_Y: i32 = 2;
 // PLACE DATE
 pub const PLACE_DATE_BOX_X: i32 = INVENTORY_X;
@@ -55,6 +55,11 @@ pub const INVENTORY_HEIGHT: i32 = 19;
 pub const INVENTORY_BANNER: &str = "Esyalar";
 pub const INVENTORY_BANNER_X: i32 = INVENTORY_X + 8;
 pub const INVENTORY_ITEMS_X: i32 = INVENTORY_X + 5;
+// ITEMS
+pub const ITEM_LIB_KEY_NAME: &str = "Kutuphane Anahtari";
+pub const ITEM_OLD_KEY_1_NAME: &str = "Eski Anahtar 1";
+pub const ITEM_OLD_KEY_2_NAME: &str = "Eski Anahtar 2";
+pub const ITEM_SWORD_NAME: &str = "Kilic";
 // NPC INTERACTION
 pub const NPC_INTERACTION_SCREEN_WIDTH: i32 = 40;
 pub const NPC_INTERACTION_SCREEN_HEIGHT: i32 = 40;
@@ -106,7 +111,6 @@ pub const INVENTORY_STRING_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 // COLORS NPC INTERACTION
 pub const NPC_INTERACTION_SCREEN_FG: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 pub const NPC_INTERACTION_SCREEN_BG: RGB = RGB { r: 0.0, g: 0.0, b: 0.0 };
-
 // COLORS CHARACTERS
 pub const PLAYER_COLOR: RGB = RGB { r: 1.0, g: 50f32 / 255.0, b: 0. };
 pub const NPC_COLOR: RGB = RGB { r: 1.0, g: 111f32 / 255.0, b: 0. };

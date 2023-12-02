@@ -1,7 +1,8 @@
 use specs::prelude::*;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
-use crate::{Name, Player, Position, Renderable, State, Item, RequiresItem, PermanentItem, SerializeMe, Place, BelongsTo, Portal, ContainsItem, Npc, Interaction};
+use crate::{Name, Player, Position, Renderable, State, Item, RequiresItem, PermanentItem, SerializeMe, Place, BelongsTo, Portal, ContainsItem, Npc, Interaction, RequiresItems, ContainsItems};
 use crate::constants::{BACKGROUND_COLOR, ITEM_DOOR_COLOR, ITEM_KEY_COLOR, ITEM_PORTAL_COLOR, KEY_CHAR, NPC_CHAR, NPC_COLOR, PLAYER_CHAR, PLAYER_COLOR, PORTAL_CHAR};
+use crate::items::ItemName;
 
 pub fn build_player(gs: &mut State, name: String, coord: (i32, i32)) -> Entity {
     gs.ecs
@@ -15,14 +16,14 @@ pub fn build_player(gs: &mut State, name: String, coord: (i32, i32)) -> Entity {
         .build()
 }
 
-pub fn build_active_item(gs: &mut State, name: String, domain: Place, coord: (i32, i32), permanent: bool) -> Entity {
+pub fn build_active_item(gs: &mut State, name: ItemName, domain: Place, coord: (i32, i32), permanent: bool) -> Entity {
     let mut builder = gs.ecs
         .create_entity()
-        .with(Name { name })
+        .with(Name { name: name.to_string() })
         .with(BelongsTo { domain })
         .with(Position { x: coord.0, y: coord.1 })
         .with(Renderable { glyph: rltk::to_cp437(KEY_CHAR), fg: ITEM_KEY_COLOR, bg: BACKGROUND_COLOR, render_order: 1 })
-        .with(Item {})
+        .with(Item { name })
         .marked::<SimpleMarker<SerializeMe>>();
 
     if permanent {
@@ -66,7 +67,7 @@ pub fn build_portal(gs: &mut State, name: String, domain: Place, coord: (i32, i3
 }
 
 pub fn build_npc(gs: &mut State, name: String, domain: Place, coord: (i32, i32), dialogues: Vec<Vec<&str>>,
-                 requires_item: Option<Entity>, contains_item: Option<Entity>, get_item_indices: Vec<usize>, give_item_indices: Vec<usize>, change_objective_indices: Vec<usize>) -> Entity {
+                 requires_item: Option<Vec<ItemName>>, contains_item: Option<Vec<ItemName>>, get_item_indices: Vec<usize>, give_item_indices: Vec<usize>, change_objective_indices: Vec<usize>) -> Entity {
     let mut builder = gs.ecs
         .create_entity()
         .with(Name { name })
@@ -82,19 +83,20 @@ pub fn build_npc(gs: &mut State, name: String, domain: Place, coord: (i32, i32),
             change_objective_indices,
         })
         .marked::<SimpleMarker<SerializeMe>>();
-    if let Some(item) = requires_item {
-        builder = builder.with(RequiresItem { item });
+    if let Some(items) = requires_item {
+        builder = builder.with(RequiresItems { items });
     }
-    if let Some(item) = contains_item {
-        builder = builder.with(ContainsItem { item });
+    if let Some(items) = contains_item {
+        builder = builder.with(ContainsItems { items });
     }
     builder.build()
 }
 
-pub fn build_dormant_item(gs: &mut State, name: String) -> Entity {
+pub fn build_dormant_item(gs: &mut State, name: ItemName) -> Entity {
     gs.ecs
         .create_entity()
-        .with(Name { name })
+        .with(Name { name: name.to_string() })
+        .with(Item { name })
         .marked::<SimpleMarker<SerializeMe>>()
         .build()
 }

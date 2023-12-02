@@ -1,6 +1,6 @@
 use rltk::{RGB, Rltk, Point, WHITE, BLACK, VirtualKeyCode, RED, GREY, YELLOW};
 use specs::prelude::*;
-use crate::{BelongsTo, ContainsItem, Interaction, Map, Name, Npc, Objective, Place, Portal, Position, Renderable, RequiresItem, RunState, save_load_system, State, Stored, TargetedPosition};
+use crate::{BelongsTo, ContainsItem, ContainsItems, Interaction, Item, Map, Name, Npc, Objective, Place, Portal, Position, Renderable, RequiresItem, RequiresItems, RunState, save_load_system, State, Stored, TargetedPosition};
 use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CREDITS_STR, CURSOR_COLOR, MENU_DELTA_Y, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_COLOR, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_DELTA_Y, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_STRING_COLOR, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, MAP_HEIGHT, MENU_ITEM_1_Y, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NPC_INTERACTION_DIALOGUE_DELTA, NPC_INTERACTION_DIALOGUE_HEADING_X, NPC_INTERACTION_DIALOGUE_HEADING_Y, NPC_INTERACTION_DIALOGUE_X, NPC_INTERACTION_DIALOGUE_Y, NPC_INTERACTION_GLYPH_X, NPC_INTERACTION_SCREEN_BG, NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_GAP_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT, NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y, QUIT_GAME_STR, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y, CREDITS_1_COLOR, CREDIT_1_STR, CREDITS_THANKS_Y, CREDIT_3_Y, CREDIT_2_Y, CREDIT_1_Y, CREDITS_3_COLOR, CREDITS_2_COLOR, CREDITS_THANKS_COLOR, CREDIT_2_STR, CREDIT_3_STR, CREDITS_THANKS_STR, PLACE_DATE_BOX_X, PLACE_DATE_BOX_Y, PLACE_DATE_BOX_WIDTH, PLACE_DATE_BOX_HEIGHT, PLACE_DATE_BOX_FG, PLACE_DATE_BOX_BG, PLACE_DATE_X, PLACE_DATE_Y, PLACE_DATE_COLOR, CONSOLE_LOG_COLOR, OBJECTIVE_BOX_GAP, OBJECTIVE_X, OBJECTIVE_Y, OBJECTIVE_DELTA_Y, OBJECTIVE_BOX_X, OBJECTIVE_BOX_Y, OBJECTIVE_BOX_WIDTH, OBJECTIVE_BOX_HEIGHT, OBJECTIVE_BOX_FG, OBJECTIVE_BOX_BG};
 use crate::gamelog::GameLog;
 
@@ -274,25 +274,42 @@ pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usi
     let positions = ecs.read_storage::<Position>();
     let names = ecs.read_storage::<Name>();
     let renderables = ecs.read_storage::<Renderable>();
-    let contains_item = ecs.read_storage::<ContainsItem>();
+    let items = ecs.read_storage::<Item>();
+    let mut contains_items = ecs.write_storage::<ContainsItems>();
     let mut log = ecs.write_resource::<GameLog>();
     let mut has_interaction = ecs.write_storage::<Interaction>();
     let mut target = ecs.fetch_mut::<TargetedPosition>();
     let mut stored_items = ecs.write_storage::<Stored>();
-    let mut requires_item = ecs.write_storage::<RequiresItem>();
-    for (_npc, interaction, pos, name, rend, cont, req) in (&npcs, &mut has_interaction, &positions, &names, &renderables, &contains_item, &mut requires_item).join() {
+    let mut requires_items = ecs.write_storage::<RequiresItems>();
+    let entities = ecs.entities();
+    for (_npc, interaction, pos, name, rend, cont, req) in (&npcs, &mut has_interaction, &positions, &names, &renderables, &mut contains_items, &mut requires_items).join() {
         if pos.x == target.x && pos.y == target.y {
             let mut increment_dialogue_index = interaction.dialogue_index < interaction.dialogues.len() - 1;
             if dialogue_index >= interaction.dialogues[interaction.dialogue_index].len() {
                 if interaction.give_item_indices.contains(&interaction.dialogue_index) {
-                    stored_items.insert(cont.item, Stored {}).expect("Error during inserting into stored items");
-                    log.entries.push(format!("Esyayi aldin: {}", names.get(cont.item).unwrap().name))
+                    let removed_item_name = cont.items.remove(0);
+                    let item_name = removed_item_name.to_string();
+                    for (item, ent) in (&items, &entities).join() {
+                        if item.name == removed_item_name {
+                            stored_items.insert(ent, Stored {}).expect("Error during inserting into stored items");
+                            break;
+                        }
+                    }
+                    log.entries.push(format!("Esyayi aldin: {}", item_name))
                 }
                 if interaction.get_item_indices.contains(&interaction.dialogue_index) {
-                    if stored_items.contains(req.item) {
-                        stored_items.remove(req.item);
-                        log.entries.push(format!("Esya kullanildi: {}", names.get(req.item).unwrap().name))
-                    } else {
+                    let mut dont_have_the_item = true;
+                    for (item, ent) in (&items, &entities).join() {
+                        if req.items.get(0).unwrap() == &item.name && stored_items.contains(ent) {
+                            let required_item = req.items.remove(0);
+                            let required_item_name = required_item.to_string();
+                            stored_items.remove(ent);
+                            log.entries.push(format!("Esya kullanildi: {}", required_item_name));
+                            dont_have_the_item = false;
+                            break;
+                        }
+                    }
+                    if dont_have_the_item {
                         log.entries.push(format!("Gerekli esyan yok"));
                         increment_dialogue_index = false;
                     }
@@ -300,7 +317,7 @@ pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usi
                 if interaction.change_objective_indices.contains(&interaction.dialogue_index) {
                     let mut objective = ecs.fetch_mut::<Objective>();
                     objective.index += 1;
-                    interaction.change_objective_indices.remove(*&interaction.dialogue_index);
+                    interaction.change_objective_indices.remove(0);
                 }
                 if increment_dialogue_index {
                     interaction.dialogue_index += 1;

@@ -4,6 +4,7 @@ use specs::error::NoError;
 use specs_derive::*;
 use rltk::{RGB};
 use serde::{Deserialize, Serialize};
+use crate::items::ItemName;
 use crate::Place;
 
 
@@ -36,8 +37,10 @@ pub struct Name {
     pub name: String,
 }
 
-#[derive(Component, Serialize, Deserialize, Clone)]
-pub struct Item {}
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct Item {
+    pub name: ItemName,
+}
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Stored {}
@@ -55,6 +58,16 @@ pub struct RequiresItem {
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct ContainsItem {
     pub item: Entity,
+}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct RequiresItems {
+    pub items: Vec<ItemName>,
+}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct ContainsItems {
+    pub items: Vec<ItemName>,
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]

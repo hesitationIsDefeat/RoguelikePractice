@@ -8,10 +8,10 @@ mod rect;
 mod gui;
 mod gamelog;
 mod spawner;
-mod inventory_system;
 mod save_load_system;
 mod constants;
-mod item_adjustment_system;
+mod items;
+mod systems;
 
 use player::*;
 pub use components::*;
@@ -20,6 +20,7 @@ use rect::*;
 use crate::gamelog::GameLog;
 use crate::gui::{ItemMenuResult, MainMenuResult, MainMenuSelection, NpcInteractionResult};
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
+use crate::items::ItemName;
 
 #[derive(PartialEq, Clone, Copy)]
 pub enum RunState {
@@ -37,10 +38,10 @@ pub struct State {
 
 impl State {
     fn run_systems(&mut self) {
-        let mut item_collection_system = inventory_system::ItemCollectionSystem {};
+        let mut item_collection_system = systems::ItemCollectionSystem {};
         item_collection_system.run_now(&self.ecs);
 
-        let mut item_adjustment_system = item_adjustment_system::ItemAdjustmentSystem {};
+        let mut item_adjustment_system = systems::ItemAdjustmentSystem {};
         item_adjustment_system.run_now(&self.ecs);
 
         self.ecs.maintain();
@@ -211,6 +212,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Impassable>();
     gs.ecs.register::<RequiresItem>();
     gs.ecs.register::<ContainsItem>();
+    gs.ecs.register::<RequiresItems>();
+    gs.ecs.register::<ContainsItems>();
     gs.ecs.register::<PermanentItem>();
     gs.ecs.register::<SimpleMarker<SerializeMe>>();
     gs.ecs.register::<SerializationHelper>();
@@ -226,14 +229,15 @@ fn main() -> rltk::BError {
     let player_coord = (10, 10);
     let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
     let player_entity = spawner::build_player(&mut gs, String::from("Onat"), player_coord);
-    let lib_key = spawner::build_active_item(&mut gs, String::from("Kütüphane Anahtari"), Place::School, (11, 11), true);
-    let ancient_key = spawner::build_active_item(&mut gs, String::from("Eski Anahtar"), Place::Library, (12, 11), true);
-    let sword = spawner::build_dormant_item(&mut gs, String::from("Kilic"));
+    let lib_key = spawner::build_active_item(&mut gs, ItemName::LibKey, Place::School, (11, 11), true);
+    let old_key_1 = spawner::build_active_item(&mut gs, ItemName::OldKey1, Place::Library, (12, 11), true);
+    let old_key_2 = spawner::build_active_item(&mut gs, ItemName::OldKey2, Place::Library, (12, 12), true);
+    let sword = spawner::build_dormant_item(&mut gs, ItemName::Sword);
     spawner::build_door(&mut gs, String::from("Kütüphane Gizli Oda Kapisi"), Place::School, (12, 12), Place::Library, (20, 20), lib_key);
     spawner::build_portal(&mut gs, String::from("Kütüphane Kapisi"), Place::Library, (14, 14), Place::School, (15, 15));
     spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::School, (20, 20),
-                       vec!(vec!("Merhaba Onat", "Bana eski anahtarı getir"), vec!("Anahtar için tesekkurler", "Sana bu kilici hediye ediyorum"), vec!("Iyi gunler")),
-                       Some(ancient_key), Some(sword), vec!(0), vec!(1), vec!(0));
+                       vec!(vec!("Merhaba Onat", "Bana eski anahtar 1 getir"), vec!("Harika", "Simdi bana eski anahtar 2 getir"), vec!("Anahtar için tesekkurler", "Sana bu kilici hediye ediyorum"), vec!("Iyi gunler")),
+                       Some(vec!(ItemName::OldKey1, ItemName::OldKey2)), Some(vec!(ItemName::Sword)), vec!(0, 1), vec!(2), vec!(0, 1));
 
     let map = Map::new_map_rooms_and_corridors(&mut gs.ecs, Place::School);
     gs.ecs.insert(map);
@@ -243,7 +247,11 @@ fn main() -> rltk::BError {
     gs.ecs.insert(TargetedPosition { x: -1, y: -1 });
     gs.ecs.insert(RunState::Game);
     gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
-    gs.ecs.insert(Objective { objectives: vec!("Taylan Hoca ile konus".to_string(), "Eski anahtari bul".to_string()), index: 0 });
+    gs.ecs.insert(Objective {
+        objectives: vec!("Taylan Hoca ile konus".to_string(), "Eski anahtar 1 bul ve Taylan Hoca'ya getir".to_string(),
+                         "Eski anahtar 2 bul ve Taylan Hoca'ya getir".to_string()),
+        index: 0,
+    });
 
     rltk::main_loop(context, gs)
 }
