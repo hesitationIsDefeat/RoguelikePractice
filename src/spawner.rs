@@ -8,7 +8,7 @@ pub fn build_player(gs: &mut State, name: String, coord: (i32, i32)) -> Entity {
     gs.ecs
         .create_entity()
         .with(Name { name })
-        .with(BelongsTo { domain: Place::School })
+        .with(BelongsTo { domain: Place::Home })
         .with(Position { x: coord.0, y: coord.1 })
         .with(Renderable { glyph: rltk::to_cp437(PLAYER_CHAR), fg: PLAYER_COLOR, bg: BACKGROUND_COLOR, render_order: 0 })
         .with(Player {})

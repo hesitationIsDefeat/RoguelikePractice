@@ -1,7 +1,7 @@
 use rltk::Rltk;
 use serde::{Deserialize, Serialize};
 use specs::{Join, World, WorldExt};
-use crate::constants::{BACKGROUND_COLOR, MAP_HEIGHT, MAP_TILES, MAP_WIDTH, SPACE_COLOR, TILE_COLOR, WALL_COLOR};
+use crate::constants::{BACKGROUND_COLOR, CURRENT_DATE, MAP_HEIGHT, MAP_TILES, MAP_WIDTH, PAST_DATE, PLACE_CLASS_NAME, PLACE_HOME_NAME, PLACE_LIB_NAME, PLACE_OTTOMAN_BOTTOM_NAME, PLACE_OTTOMAN_LEFT_NAME, PLACE_OTTOMAN_MAIN_NAME, PLACE_OTTOMAN_RIGHT_NAME, PLACE_OTTOMAN_TOP_NAME, PLACE_SCHOOL_NAME, SPACE_COLOR, TILE_COLOR, WALL_COLOR};
 use super::{BelongsTo, Npc, Portal, Position, Rect, RequiresItem};
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
@@ -16,21 +16,35 @@ pub enum TileType {
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum Place {
+    Home,
     School,
+    Class,
     Library,
+    Ottoman_Main,
+    Ottoman_Left,
+    Ottoman_Right,
+    Ottoman_Top,
+    Ottoman_Bottom,
 }
 
 impl Place {
     pub fn get_name(&self) -> String {
         String::from(match self {
-            Place::School => "Okul",
-            Place::Library => "Kütüphane",
+            Place::Home => PLACE_HOME_NAME,
+            Place::School => PLACE_SCHOOL_NAME,
+            Place::Class => PLACE_CLASS_NAME,
+            Place::Library => PLACE_LIB_NAME,
+            Place::Ottoman_Main => PLACE_OTTOMAN_MAIN_NAME,
+            Place::Ottoman_Left => PLACE_OTTOMAN_LEFT_NAME,
+            Place::Ottoman_Right => PLACE_OTTOMAN_RIGHT_NAME,
+            Place::Ottoman_Top => PLACE_OTTOMAN_TOP_NAME,
+            Place::Ottoman_Bottom => PLACE_OTTOMAN_BOTTOM_NAME
         })
     }
     pub fn get_year(&self) -> String {
         String::from(match self {
-            Place::School => "2023",
-            Place::Library => "2022",
+            Place::School | Place::Home | Place::Class | Place::Library => CURRENT_DATE,
+            Place::Ottoman_Main | Place::Ottoman_Left | Place::Ottoman_Right | Place::Ottoman_Top | Place::Ottoman_Bottom => PAST_DATE,
         })
     }
 }
@@ -98,17 +112,18 @@ impl Map {
             height: MAP_HEIGHT,
             place,
         };
-
-        match place {
-            Place::School => {
-                let school = Rect::new(4, 4, 30, 20);
-                map.apply_room_to_map(&school);
-            }
-            Place::Library => {
-                let library = Rect::new(10, 10, 30, 30);
-                map.apply_room_to_map(&library);
-            }
-        }
+        let created_place: Rect = match place {
+            Place::Home => Rect::new(20, 15, 10, 10),
+            Place::School => Rect::new(9, 9, 30, 20),
+            Place::Class => Rect::new(20, 10, 15, 20),
+            Place::Library => Rect::new(15, 15, 25, 13),
+            Place::Ottoman_Main => Rect::new(10, 10, 30, 30),
+            Place::Ottoman_Left => Rect::new(15, 15, 20, 20),
+            Place::Ottoman_Right => Rect::new(15, 15, 20, 20),
+            Place::Ottoman_Top => Rect::new(15, 15, 20, 20),
+            Place::Ottoman_Bottom => Rect::new(15, 15, 20, 20),
+        };
+        map.apply_room_to_map(&created_place);
 
         map.adjust_tiles(ecs);
 

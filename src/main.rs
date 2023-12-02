@@ -200,6 +200,7 @@ fn main() -> rltk::BError {
     use rltk::RltkBuilder;
     let context = RltkBuilder::simple80x50()
         .with_title("Roguelike Tutorial")
+        .with_tile_dimensions(12, 12)
         .build()?;
     let mut gs = State { ecs: World::new() };
 
@@ -225,23 +226,30 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Interaction>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
-    gs.ecs.insert(Place::School);
+    gs.ecs.insert(Place::Home);
 
-    let player_coord = (10, 10);
+    let player_coord = (25, 20);
     let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
     let player_entity = spawner::build_player(&mut gs, String::from("Onat"), player_coord);
-    spawner::build_active_item(&mut gs, ItemName::LibKey, Place::School, (11, 11), true);
-    spawner::build_active_item(&mut gs, ItemName::OldKey1, Place::Library, (12, 11), true);
-    spawner::build_active_item(&mut gs, ItemName::OldKey2, Place::Library, (12, 12), true);
+
+    spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Home, (19, 20), Place::School, (38, 20));
+    spawner::build_portal(&mut gs, String::from("Ev Kapisi"), Place::School, (39, 20), Place::Home, (20, 20));
+    spawner::build_portal(&mut gs, String::from("M2152 Kapisi"), Place::School, (24, 29), Place::Class, (20, 13));
+    spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Class, (19, 13), Place::School, (24, 28));
+    spawner::build_portal(&mut gs, String::from("Kutuphane Kapisi"), Place::School, (8, 20), Place::Library, (39, 20));
+    spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Library, (40, 20), Place::School, (9, 20));
+    spawner::build_portal(&mut gs, String::from("Gizli Kapi"), Place::School, (24, 8), Place::Ottoman_Main, (20, 20));
+
+
+    spawner::build_active_item(&mut gs, ItemName::OldKey1, Place::Library, (19, 19), true);
+    spawner::build_active_item(&mut gs, ItemName::OldKey2, Place::Library, (20, 20), true);
     spawner::build_dormant_item(&mut gs, ItemName::Sword);
-    spawner::build_door(&mut gs, String::from("Kütüphane Gizli Oda Kapisi"), Place::School, (12, 12), Place::Library, (20, 20), ItemName::LibKey);
-    spawner::build_door(&mut gs, String::from("Cikis"), Place::School, (14, 12), Place::Library, (21, 21), ItemName::Sword);
-    spawner::build_portal(&mut gs, String::from("Kütüphane Kapisi"), Place::Library, (14, 14), Place::School, (15, 15));
-    spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::School, (20, 20),
+
+    spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::Class, (31, 12),
                        vec!(vec!("Merhaba Onat", "Bana eski anahtar 1 getir"), vec!("Harika", "Simdi bana eski anahtar 2 getir"), vec!("Anahtar için tesekkurler", "Sana bu kilici hediye ediyorum"), vec!("Iyi gunler")),
                        Some(vec!(ItemName::OldKey1, ItemName::OldKey2)), Some(vec!(ItemName::Sword)), vec!(0, 1), vec!(2), vec!(0, 1));
 
-    let map = Map::new_map_rooms_and_corridors(&mut gs.ecs, Place::School);
+    let map = Map::new_map_rooms_and_corridors(&mut gs.ecs, Place::Home);
     gs.ecs.insert(map);
     gs.ecs.insert(log);
     gs.ecs.insert(player_entity);

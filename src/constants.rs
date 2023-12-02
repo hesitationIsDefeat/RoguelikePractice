@@ -40,6 +40,17 @@ pub const OBJECTIVE_X: i32 = OBJECTIVE_BOX_X + 2;
 pub const OBJECTIVE_Y: i32 = OBJECTIVE_BOX_Y + 2;
 pub const OBJECTIVE_DELTA_Y: i32 = 2;
 // PLACE DATE
+pub const PLACE_HOME_NAME: &str = "Ev";
+pub const PLACE_SCHOOL_NAME: &str = "Bogazici Guney Kampus";
+pub const PLACE_CLASS_NAME: &str = "M 2152";
+pub const PLACE_LIB_NAME: &str = "Bogazici Olmayan Kutuphane";
+pub const PLACE_OTTOMAN_MAIN_NAME: &str = "Osmanli Meydan";
+pub const PLACE_OTTOMAN_LEFT_NAME: &str = "Osmanli Sol";
+pub const PLACE_OTTOMAN_RIGHT_NAME: &str = "Osmanli Sag";
+pub const PLACE_OTTOMAN_TOP_NAME: &str = "Osmanli Yukari";
+pub const PLACE_OTTOMAN_BOTTOM_NAME: &str = "Osmanli Asagi";
+pub const CURRENT_DATE: &str = "2023";
+pub const PAST_DATE: &str = "1900";
 pub const PLACE_DATE_BOX_X: i32 = INVENTORY_X;
 pub const PLACE_DATE_BOX_Y: i32 = INVENTORY_Y - 3;
 pub const PLACE_DATE_BOX_WIDTH: i32 = INVENTORY_WIDTH;
