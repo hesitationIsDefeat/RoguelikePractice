@@ -233,7 +233,7 @@ fn main() -> rltk::BError {
     spawner::build_portal(&mut gs, String::from("Kütüphane Kapisi"), Place::Library, (14, 14), Place::School, (15, 15));
     spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::School, (20, 20),
                        vec!(vec!("Merhaba Onat", "Bana eski anahtarı getir"), vec!("Anahtar için tesekkurler", "Sana bu kilici hediye ediyorum"), vec!("Iyi gunler")),
-                       Some(ancient_key), Some(sword), vec!(0), vec!(1));
+                       Some(ancient_key), Some(sword), vec!(0), vec!(1), vec!(0));
 
     let map = Map::new_map_rooms_and_corridors(&mut gs.ecs, Place::School);
     gs.ecs.insert(map);
@@ -243,7 +243,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(TargetedPosition { x: -1, y: -1 });
     gs.ecs.insert(RunState::Game);
     gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
-    //gs.ecs.insert(Objective { objective: String::from("Ev anahtarini bul") });
+    gs.ecs.insert(Objective { objectives: vec!("Taylan Hoca ile konus".to_string(), "Eski anahtari bul".to_string()), index: 0 });
 
     rltk::main_loop(context, gs)
 }

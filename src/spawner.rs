@@ -66,7 +66,7 @@ pub fn build_portal(gs: &mut State, name: String, domain: Place, coord: (i32, i3
 }
 
 pub fn build_npc(gs: &mut State, name: String, domain: Place, coord: (i32, i32), dialogues: Vec<Vec<&str>>,
-                 requires_item: Option<Entity>, contains_item: Option<Entity>, get_item_indices: Vec<usize>, give_item_indices: Vec<usize>) -> Entity {
+                 requires_item: Option<Entity>, contains_item: Option<Entity>, get_item_indices: Vec<usize>, give_item_indices: Vec<usize>, change_objective_indices: Vec<usize>) -> Entity {
     let mut builder = gs.ecs
         .create_entity()
         .with(Name { name })
@@ -79,6 +79,7 @@ pub fn build_npc(gs: &mut State, name: String, domain: Place, coord: (i32, i32),
             dialogue_index: 0,
             get_item_indices,
             give_item_indices,
+            change_objective_indices,
         })
         .marked::<SimpleMarker<SerializeMe>>();
     if let Some(item) = requires_item {

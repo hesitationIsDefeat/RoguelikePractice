@@ -83,7 +83,8 @@ pub struct Npc {}
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Objective {
-    pub objective: String,
+    pub objectives: Vec<String>,
+    pub index: usize,
 }
 
 #[derive(Component, ConvertSaveload, Clone)]
@@ -92,4 +93,5 @@ pub struct Interaction {
     pub dialogue_index: usize,
     pub get_item_indices: Vec<usize>,
     pub give_item_indices: Vec<usize>,
+    pub change_objective_indices: Vec<usize>,
 }
