@@ -52,12 +52,12 @@ pub struct Impassable {}
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct RequiresItem {
-    pub item: Entity,
+    pub item: ItemName,
 }
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct ContainsItem {
-    pub item: Entity,
+    pub item: ItemName,
 }
 
 #[derive(Component, ConvertSaveload, Clone)]

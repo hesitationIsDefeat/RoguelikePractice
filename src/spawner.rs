@@ -33,7 +33,7 @@ pub fn build_active_item(gs: &mut State, name: ItemName, domain: Place, coord: (
     builder.build()
 }
 
-fn build_door_or_portal(gs: &mut State, name: String, domain: Place, coord: (i32, i32), target: Place, warp_place: (i32, i32), key: Option<Entity>) -> Entity {
+fn build_door_or_portal(gs: &mut State, name: String, domain: Place, coord: (i32, i32), target: Place, warp_place: (i32, i32), key: Option<ItemName>) -> Entity {
     let mut builder = gs.ecs
         .create_entity()
         .with(Name { name })
@@ -58,7 +58,7 @@ fn build_door_or_portal(gs: &mut State, name: String, domain: Place, coord: (i32
     builder.build()
 }
 
-pub fn build_door(gs: &mut State, name: String, domain: Place, coord: (i32, i32), target: Place, warp_place: (i32, i32), key: Entity) -> Entity {
+pub fn build_door(gs: &mut State, name: String, domain: Place, coord: (i32, i32), target: Place, warp_place: (i32, i32), key: ItemName) -> Entity {
     build_door_or_portal(gs, name, domain, coord, target, warp_place, Some(key))
 }
 

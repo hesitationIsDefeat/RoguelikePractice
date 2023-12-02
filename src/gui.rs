@@ -3,6 +3,7 @@ use specs::prelude::*;
 use crate::{BelongsTo, ContainsItem, ContainsItems, Interaction, Item, Map, Name, Npc, Objective, Place, Portal, Position, Renderable, RequiresItem, RequiresItems, RunState, save_load_system, State, Stored, TargetedPosition};
 use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CREDITS_STR, CURSOR_COLOR, MENU_DELTA_Y, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_COLOR, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_DELTA_Y, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_STRING_COLOR, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, MAP_HEIGHT, MENU_ITEM_1_Y, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NPC_INTERACTION_DIALOGUE_DELTA, NPC_INTERACTION_DIALOGUE_HEADING_X, NPC_INTERACTION_DIALOGUE_HEADING_Y, NPC_INTERACTION_DIALOGUE_X, NPC_INTERACTION_DIALOGUE_Y, NPC_INTERACTION_GLYPH_X, NPC_INTERACTION_SCREEN_BG, NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_GAP_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT, NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y, QUIT_GAME_STR, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y, CREDITS_1_COLOR, CREDIT_1_STR, CREDITS_THANKS_Y, CREDIT_3_Y, CREDIT_2_Y, CREDIT_1_Y, CREDITS_3_COLOR, CREDITS_2_COLOR, CREDITS_THANKS_COLOR, CREDIT_2_STR, CREDIT_3_STR, CREDITS_THANKS_STR, PLACE_DATE_BOX_X, PLACE_DATE_BOX_Y, PLACE_DATE_BOX_WIDTH, PLACE_DATE_BOX_HEIGHT, PLACE_DATE_BOX_FG, PLACE_DATE_BOX_BG, PLACE_DATE_X, PLACE_DATE_Y, PLACE_DATE_COLOR, CONSOLE_LOG_COLOR, OBJECTIVE_BOX_GAP, OBJECTIVE_X, OBJECTIVE_Y, OBJECTIVE_DELTA_Y, OBJECTIVE_BOX_X, OBJECTIVE_BOX_Y, OBJECTIVE_BOX_WIDTH, OBJECTIVE_BOX_HEIGHT, OBJECTIVE_BOX_FG, OBJECTIVE_BOX_BG};
 use crate::gamelog::GameLog;
+use crate::items::ItemName;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum ItemMenuResult { Cancel, NoResponse, Selected }
@@ -231,26 +232,25 @@ fn draw_inventory(ecs: &World, ctx: &mut Rltk) {
     }
 }
 
-pub fn draw_use_item(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
-    let names = gs.ecs.read_storage::<Name>();
+pub fn draw_use_item(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<ItemName>) {
+    let items = gs.ecs.read_storage::<Item>();
     let backpack = gs.ecs.read_storage::<Stored>();
-    let entities = gs.ecs.entities();
 
-    let inventory = (&backpack, &names).join();
+    let inventory = (&backpack, &items).join();
     let count = inventory.count();
 
     let mut y = 25;
     ctx.print_color(INVENTORY_BANNER_X, y - 2, RGB::named(YELLOW), BACKGROUND_COLOR, INVENTORY_BANNER);
 
     let mut j = 0;
-    let mut usable: Vec<Entity> = Vec::new();
-    for (item_ent, _pack, name) in (&entities, &backpack, &names).join() {
+    let mut usable: Vec<ItemName> = Vec::new();
+    for (_pack, item) in (&backpack, &items).join() {
         ctx.set(INVENTORY_ITEMS_X - 3, y, RGB::named(WHITE), RGB::named(BLACK), rltk::to_cp437('('));
         ctx.set(INVENTORY_ITEMS_X - 2, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + j as rltk::FontCharType);
         ctx.set(INVENTORY_ITEMS_X - 1, y, RGB::named(WHITE), RGB::named(BLACK), rltk::to_cp437(')'));
 
-        ctx.print(INVENTORY_ITEMS_X, y, &name.name.to_string());
-        usable.push(item_ent);
+        ctx.print(INVENTORY_ITEMS_X, y, &item.name.to_string());
+        usable.push(item.name);
         y += INVENTORY_DELTA_Y;
         j += 1;
     }

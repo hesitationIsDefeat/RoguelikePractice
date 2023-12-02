@@ -20,6 +20,7 @@ use rect::*;
 use crate::gamelog::GameLog;
 use crate::gui::{ItemMenuResult, MainMenuResult, MainMenuSelection, NpcInteractionResult};
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
+use crate::constants::ITEM_LIB_KEY_NAME;
 use crate::items::ItemName;
 
 #[derive(PartialEq, Clone, Copy)]
@@ -145,18 +146,18 @@ impl GameState for State {
 
                         let positions = self.ecs.read_storage::<Position>();
                         let target_pos = self.ecs.fetch::<TargetedPosition>();
+                        let items = self.ecs.read_storage::<Item>();
                         let mut requires_item = self.ecs.write_storage::<RequiresItem>();
-                        let names = self.ecs.read_storage::<Name>();
                         let mut log = self.ecs.write_resource::<GameLog>();
                         let mut map = self.ecs.write_resource::<Map>();
                         let entities = self.ecs.entities();
 
-                        for (ent, pos, req) in (&entities, &positions, &requires_item).join() {
+                        for (pos, req, ent) in (&positions, &requires_item, &entities).join() {
                             if pos.x == target_pos.x && pos.y == target_pos.y {
                                 if req.item == item {
-                                    log.entries.push(format!("Esya kullanildi: {}", names.get(item).unwrap().name));
-                                    if self.ecs.read_storage::<PermanentItem>().get(item).is_none() {
-                                        self.ecs.write_storage::<Stored>().remove(item);
+                                    log.entries.push(format!("Esya kullanildi: {}", item.to_string()));
+                                    if self.ecs.read_storage::<PermanentItem>().get(ent).is_none() {
+                                        self.ecs.write_storage::<Stored>().remove(ent);
                                     }
                                     if self.ecs.read_storage::<Portal>().get(ent).is_some() {
                                         map.tiles[Map::xy_to_tile(pos.x, pos.y)] = TileType::Portal;
@@ -229,11 +230,12 @@ fn main() -> rltk::BError {
     let player_coord = (10, 10);
     let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
     let player_entity = spawner::build_player(&mut gs, String::from("Onat"), player_coord);
-    let lib_key = spawner::build_active_item(&mut gs, ItemName::LibKey, Place::School, (11, 11), true);
-    let old_key_1 = spawner::build_active_item(&mut gs, ItemName::OldKey1, Place::Library, (12, 11), true);
-    let old_key_2 = spawner::build_active_item(&mut gs, ItemName::OldKey2, Place::Library, (12, 12), true);
-    let sword = spawner::build_dormant_item(&mut gs, ItemName::Sword);
-    spawner::build_door(&mut gs, String::from("Kütüphane Gizli Oda Kapisi"), Place::School, (12, 12), Place::Library, (20, 20), lib_key);
+    spawner::build_active_item(&mut gs, ItemName::LibKey, Place::School, (11, 11), true);
+    spawner::build_active_item(&mut gs, ItemName::OldKey1, Place::Library, (12, 11), true);
+    spawner::build_active_item(&mut gs, ItemName::OldKey2, Place::Library, (12, 12), true);
+    spawner::build_dormant_item(&mut gs, ItemName::Sword);
+    spawner::build_door(&mut gs, String::from("Kütüphane Gizli Oda Kapisi"), Place::School, (12, 12), Place::Library, (20, 20), ItemName::LibKey);
+    spawner::build_door(&mut gs, String::from("Cikis"), Place::School, (14, 12), Place::Library, (21, 21), ItemName::Sword);
     spawner::build_portal(&mut gs, String::from("Kütüphane Kapisi"), Place::Library, (14, 14), Place::School, (15, 15));
     spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::School, (20, 20),
                        vec!(vec!("Merhaba Onat", "Bana eski anahtar 1 getir"), vec!("Harika", "Simdi bana eski anahtar 2 getir"), vec!("Anahtar için tesekkurler", "Sana bu kilici hediye ediyorum"), vec!("Iyi gunler")),
