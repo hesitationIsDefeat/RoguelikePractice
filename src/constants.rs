@@ -4,7 +4,7 @@ use rltk::RGB;
 pub const SCREEN_WIDTH: i32 = 80;
 pub const SCREEN_HEIGHT: i32 = 50;
 // MAP
-pub const MAP_WIDTH: i32 = 55;
+pub const MAP_WIDTH: i32 = 50;
 pub const MAP_HEIGHT: i32 = 43;
 pub const MAP_TILES: i32 = MAP_WIDTH * MAP_HEIGHT;
 // MENU
@@ -27,14 +27,14 @@ pub const CREDIT_3_STR: &str = "Oramakoma Buramako: Tarih uzerine arastirmalari 
 pub const CREDITS_THANKS_STR: &str = "TESEKKURLER";
 // CHARS
 pub const PLAYER_CHAR: char = '☻';
-pub const KEY_CHAR: char = '♪';
+pub const KEY_CHAR: char = '◙';
 pub const PORTAL_CHAR: char = 'Ω';
 pub const NPC_CHAR: char = '☺';
 // OBJECTIVE
 pub const OBJECTIVE_BOX_X: i32 = INVENTORY_X;
 pub const OBJECTIVE_BOX_Y: i32 = PLACE_DATE_BOX_Y - OBJECTIVE_BOX_HEIGHT - 1;
 pub const OBJECTIVE_BOX_WIDTH: i32 = INVENTORY_WIDTH;
-pub const OBJECTIVE_BOX_GAP: i32 = OBJECTIVE_BOX_WIDTH - 2 * OBJECTIVE_DELTA_Y;
+pub const OBJECTIVE_BOX_GAP: i32 = OBJECTIVE_BOX_WIDTH - 4;
 pub const OBJECTIVE_BOX_HEIGHT: i32 = 10;
 pub const OBJECTIVE_X: i32 = OBJECTIVE_BOX_X + 2;
 pub const OBJECTIVE_Y: i32 = OBJECTIVE_BOX_Y + 2;
@@ -64,13 +64,17 @@ pub const INVENTORY_DELTA_Y: i32 = 2;
 pub const INVENTORY_WIDTH: i32 = SCREEN_WIDTH - MAP_WIDTH - 1;
 pub const INVENTORY_HEIGHT: i32 = 19;
 pub const INVENTORY_BANNER: &str = "Esyalar";
-pub const INVENTORY_BANNER_X: i32 = INVENTORY_X + 8;
-pub const INVENTORY_ITEMS_X: i32 = INVENTORY_X + 5;
+pub const INVENTORY_BANNER_X: i32 = INVENTORY_X + INVENTORY_WIDTH / 2 - (INVENTORY_BANNER.len() / 2) as i32;
+pub const INVENTORY_ITEMS_X: i32 = INVENTORY_X + 4;
 // ITEMS
-pub const ITEM_LIB_KEY_NAME: &str = "Kutuphane Anahtari";
-pub const ITEM_OLD_KEY_1_NAME: &str = "Eski Anahtar 1";
-pub const ITEM_OLD_KEY_2_NAME: &str = "Eski Anahtar 2";
-pub const ITEM_SWORD_NAME: &str = "Kilic";
+pub const ITEM_BOOK_NAME: &str = "Taylan Hoca'nin Kitabi";
+pub const ITEM_SECRET_GATE_KEY_NAME: &str = "Gizli Gecit Anahtari";
+pub const OTTOMAN_KEY_1_NAME: &str = "Kapi 1 Anahtari";
+pub const OTTOMAN_KEY_2_NAME: &str = "Kapi 2 Anahtari";
+pub const OTTOMAN_KEY_3_NAME: &str = "Kapi 3 Anahtari";
+pub const OTTOMAN_KEY_4_NAME: &str = "Kapi 4 Anahtari";
+pub const OTTOMAN_KEY_MAIN_NAME: &str = "Zaman Kapisi Anahtari";
+
 // NPC INTERACTION
 pub const NPC_INTERACTION_SCREEN_WIDTH: i32 = 40;
 pub const NPC_INTERACTION_SCREEN_HEIGHT: i32 = 40;

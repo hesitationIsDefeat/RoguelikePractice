@@ -20,7 +20,6 @@ use rect::*;
 use crate::gamelog::GameLog;
 use crate::gui::{ItemMenuResult, MainMenuResult, MainMenuSelection, NpcInteractionResult};
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
-use crate::constants::ITEM_LIB_KEY_NAME;
 use crate::items::ItemName;
 
 #[derive(PartialEq, Clone, Copy)]
@@ -146,7 +145,6 @@ impl GameState for State {
 
                         let positions = self.ecs.read_storage::<Position>();
                         let target_pos = self.ecs.fetch::<TargetedPosition>();
-                        let items = self.ecs.read_storage::<Item>();
                         let mut requires_item = self.ecs.write_storage::<RequiresItem>();
                         let mut log = self.ecs.write_resource::<GameLog>();
                         let mut map = self.ecs.write_resource::<Map>();
@@ -238,16 +236,26 @@ fn main() -> rltk::BError {
     spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Class, (19, 13), Place::School, (24, 28));
     spawner::build_portal(&mut gs, String::from("Kutuphane Kapisi"), Place::School, (8, 20), Place::Library, (39, 20));
     spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Library, (40, 20), Place::School, (9, 20));
-    spawner::build_portal(&mut gs, String::from("Gizli Kapi"), Place::School, (24, 8), Place::Ottoman_Main, (20, 20));
+    spawner::build_door(&mut gs, String::from("Gizli Kapi"), Place::School, (24, 8), Place::Ottoman_Main, (25, 24), ItemName::SecretGateKey);
+
+    spawner::build_door(&mut gs, String::from("Kapi 1"), Place::Ottoman_Main, (9, 24), Place::Ottoman_Left, (20, 20), ItemName::OttomanKey1);
+    spawner::build_door(&mut gs, String::from("Kapi 2"), Place::Ottoman_Main, (24, 9), Place::Ottoman_Top, (20, 20), ItemName::OttomanKey2);
+    spawner::build_door(&mut gs, String::from("Kapi 3"), Place::Ottoman_Main, (40, 24), Place::Ottoman_Right, (20, 20), ItemName::OttomanKey3);
+    spawner::build_door(&mut gs, String::from("Kapi 4"), Place::Ottoman_Main, (24, 40), Place::Ottoman_Bottom, (20, 20), ItemName::OttomanKey4);
+    spawner::build_door(&mut gs, String::from("Zaman Kapisi"), Place::Ottoman_Main, (1, 1), Place::Ottoman_Left, (20, 20), ItemName::OttomanKeyMain);
 
 
-    spawner::build_active_item(&mut gs, ItemName::OldKey1, Place::Library, (19, 19), true);
-    spawner::build_active_item(&mut gs, ItemName::OldKey2, Place::Library, (20, 20), true);
-    spawner::build_dormant_item(&mut gs, ItemName::Sword);
+    spawner::build_active_item(&mut gs, ItemName::Book, Place::Library, (19, 19), true);
+    spawner::build_active_item(&mut gs, ItemName::Book, Place::Library, (20, 20), true);
+    spawner::build_dormant_item(&mut gs, ItemName::SecretGateKey);
+
 
     spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::Class, (31, 12),
-                       vec!(vec!("Merhaba Onat", "Bana eski anahtar 1 getir"), vec!("Harika", "Simdi bana eski anahtar 2 getir"), vec!("Anahtar için tesekkurler", "Sana bu kilici hediye ediyorum"), vec!("Iyi gunler")),
-                       Some(vec!(ItemName::OldKey1, ItemName::OldKey2)), Some(vec!(ItemName::Sword)), vec!(0, 1), vec!(2), vec!(0, 1));
+                       vec!(vec!("Merhaba Onat", "Bugun derste gösterecegim kitaplari kutuphanede unutmusum", "Rica etsem getirebilir misiniz?"),
+                            vec!("Super, bir tane daha olmali"),
+                            vec!("Cok tesekkurler", "Sana bu anahtari hediye ediyorum"),
+                            vec!("Iyi gunler")),
+                       Some(vec!(ItemName::Book, ItemName::Book)), Some(vec!(ItemName::SecretGateKey)), vec!(0, 1), vec!(2), vec!(0, 2));
 
     let map = Map::new_map_rooms_and_corridors(&mut gs.ecs, Place::Home);
     gs.ecs.insert(map);
@@ -258,8 +266,8 @@ fn main() -> rltk::BError {
     gs.ecs.insert(RunState::Game);
     gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
     gs.ecs.insert(Objective {
-        objectives: vec!("Taylan Hoca ile konus".to_string(), "Eski anahtar 1 bul ve Taylan Hoca'ya getir".to_string(),
-                         "Eski anahtar 2 bul ve Taylan Hoca'ya getir".to_string()),
+        objectives: vec!("Sınıfa git ve Taylan Hoca ile konus".to_string(), "Taylan Hoca'ya kitapları ulastir".to_string(),
+                         "Gizli gecidi bul ve arastir".to_string()),
         index: 0,
     });
 
