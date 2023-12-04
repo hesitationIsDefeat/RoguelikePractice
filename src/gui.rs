@@ -226,7 +226,7 @@ fn draw_inventory(ecs: &World, ctx: &mut Rltk) {
     let backpack = ecs.read_storage::<Stored>();
 
     let mut y = INVENTORY_ITEMS_Y;
-    ctx.print_color(INVENTORY_BANNER_X, y - 2, INVENTORY_BANNER_COLOR, BACKGROUND_COLOR, INVENTORY_BANNER);
+    ctx.print_color(INVENTORY_BANNER_X, y - 2, RGB::named(YELLOW), BACKGROUND_COLOR, INVENTORY_BANNER);
 
     for (_pack, name) in (&backpack, &names).join() {
         ctx.print_color(INVENTORY_ITEMS_X, y, INVENTORY_STRING_COLOR, BACKGROUND_COLOR, &name.name.to_string());
@@ -241,8 +241,7 @@ pub fn draw_use_item(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<
     let inventory = (&backpack, &items).join();
     let count = inventory.count();
 
-    let mut y = 25;
-    ctx.print_color(INVENTORY_BANNER_X, y - 2, RGB::named(YELLOW), BACKGROUND_COLOR, INVENTORY_BANNER);
+    let mut y = INVENTORY_ITEMS_Y;
 
     let mut j = 0;
     let mut usable: Vec<ItemName> = Vec::new();
@@ -251,7 +250,6 @@ pub fn draw_use_item(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<
         ctx.set(INVENTORY_ITEMS_X - 2, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + j as rltk::FontCharType);
         ctx.set(INVENTORY_ITEMS_X - 1, y, RGB::named(WHITE), RGB::named(BLACK), rltk::to_cp437(')'));
 
-        ctx.print(INVENTORY_ITEMS_X, y, &item.name.to_string());
         usable.push(item.name);
         y += INVENTORY_DELTA_Y;
         j += 1;

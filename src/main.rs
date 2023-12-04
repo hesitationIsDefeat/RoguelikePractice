@@ -20,6 +20,7 @@ use rect::*;
 use crate::gamelog::GameLog;
 use crate::gui::{ItemMenuResult, MainMenuResult, MainMenuSelection, NpcInteractionResult};
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
+use crate::constants::{HOME_FROM_SCHOOL_COORD, HOME_TO_SCHOOL_PORTAL_COORD, SCHOOL_FROM_HOME_COORD, SCHOOL_FROM_CLASS_COORD, SCHOOL_TO_HOME_PORTAL_COORD, SCHOOL_TO_CLASS_PORTAL_COORD, CLASS_TO_SCHOOL_PORTAL_COORD, CLASS_FROM_SCHOOL_COORD, SCHOOL_TO_LIBRARY_PORTAL_COORD, SCHOOL_FROM_LIBRARY_COORD, LIBRARY_TO_SCHOOL_PORTAL_COORD, LIBRARY_FROM_SCHOOL_COORD, SCHOOL_TO_OTTOMAN_PORTAL_COORD, OTTOMAN_FROM_SCHOOL_COORD, SCHOOL_FROM_OTTOMAN_COORD, OTTOMAN_TO_LEFT_PORTAL_COORD, OTTOMAN_FROM_LEFT_COORD, OTTOMAN_LEFT_FROM_MAIN_COORD, OTTOMAN_LEFT_TO_MAIN_PORTAL_COORD, OTTOMAN_TO_TOP_PORTAL_COORD, OTTOMAN_FROM_TOP_COORD, OTTOMAN_TOP_FROM_MAIN_COORD, OTTOMAN_TOP_TO_MAIN_PORTAL_COORD, OTTOMAN_TO_SCHOOL_PORTAL_COORD, OTTOMAN_TO_RIGHT_PORTAL_COORD, OTTOMAN_FROM_RIGHT_COORD, OTTOMAN_RIGHT_FROM_MAIN_COORD, OTTOMAN_RIGHT_TO_MAIN_PORTAL_COORD, OTTOMAN_TO_BOTTOM_PORTAL_COORD, OTTOMAN_BOTTOM_FROM_MAIN_COORD, OTTOMAN_BOTTOM_TO_MAIN_PORTAL_COORD, OTTOMAN_FROM_BOTTOM_COORD, CLASS_WIDTH, CLASS_X, CLASS_Y, CLASS_HEIGHT, OTTOMAN_MAIN_X, OTTOMAN_MAIN_WIDTH, OTTOMAN_MAIN_Y, OTTOMAN_MAIN_HEIGHT, OTTOMAN_LEFT_WIDTH, OTTOMAN_LEFT_X, OTTOMAN_LEFT_HEIGHT, OTTOMAN_LEFT_Y, OTTOMAN_TOP_X, OTTOMAN_TOP_WIDTH, OTTOMAN_TOP_Y, OTTOMAN_TOP_HEIGHT, OTTOMAN_RIGHT_X, OTTOMAN_RIGHT_WIDTH, OTTOMAN_RIGHT_Y, OTTOMAN_RIGHT_HEIGHT, OTTOMAN_BOTTOM_X, OTTOMAN_BOTTOM_WIDTH, OTTOMAN_BOTTOM_Y, OTTOMAN_BOTTOM_HEIGHT};
 use crate::items::ItemName;
 
 #[derive(PartialEq, Clone, Copy)]
@@ -230,30 +231,30 @@ fn main() -> rltk::BError {
     let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
     let player_entity = spawner::build_player(&mut gs, String::from("Onat"), player_coord);
 
-    spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Home, (19, 20), Place::School, (38, 20));
-    spawner::build_portal(&mut gs, String::from("Ev Kapisi"), Place::School, (39, 20), Place::Home, (20, 20));
+    spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Home, HOME_TO_SCHOOL_PORTAL_COORD, Place::School, SCHOOL_FROM_HOME_COORD);
+    spawner::build_portal(&mut gs, String::from("Ev Kapisi"), Place::School, SCHOOL_TO_HOME_PORTAL_COORD, Place::Home, HOME_FROM_SCHOOL_COORD);
 
-    spawner::build_portal(&mut gs, String::from("M2152 Kapisi"), Place::School, (24, 29), Place::Class, (20, 13));
-    spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Class, (19, 13), Place::School, (24, 28));
+    spawner::build_portal(&mut gs, String::from("M2152 Kapisi"), Place::School, SCHOOL_TO_CLASS_PORTAL_COORD, Place::Class, CLASS_FROM_SCHOOL_COORD);
+    spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Class, CLASS_TO_SCHOOL_PORTAL_COORD, Place::School, SCHOOL_FROM_CLASS_COORD);
 
-    spawner::build_portal(&mut gs, String::from("Kutuphane Kapisi"), Place::School, (8, 20), Place::Library, (39, 20));
-    spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Library, (40, 20), Place::School, (9, 20));
+    spawner::build_portal(&mut gs, String::from("Kutuphane Kapisi"), Place::School, SCHOOL_TO_LIBRARY_PORTAL_COORD, Place::Library, LIBRARY_FROM_SCHOOL_COORD);
+    spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Library, LIBRARY_TO_SCHOOL_PORTAL_COORD, Place::School, SCHOOL_FROM_LIBRARY_COORD);
 
-    spawner::build_door(&mut gs, String::from("Gizli Kapi"), Place::School, (24, 8), Place::OttomanMain, (25, 24), ItemName::SecretGateKey);
+    spawner::build_door(&mut gs, String::from("Gizli Kapi"), Place::School, SCHOOL_TO_OTTOMAN_PORTAL_COORD, Place::OttomanMain, OTTOMAN_FROM_SCHOOL_COORD, ItemName::SecretGateKey);
 
-    spawner::build_door(&mut gs, String::from("Kapi 1"), Place::OttomanMain, (9, 24), Place::OttomanLeft, (34, 24), ItemName::OttomanKey1);
-    spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanLeft, (35, 24), Place::OttomanMain, (10, 24));
+    spawner::build_door(&mut gs, String::from("Kapi 1"), Place::OttomanMain, OTTOMAN_TO_LEFT_PORTAL_COORD, Place::OttomanLeft, OTTOMAN_LEFT_FROM_MAIN_COORD, ItemName::OttomanKey1);
+    spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanLeft, OTTOMAN_LEFT_TO_MAIN_PORTAL_COORD, Place::OttomanMain, OTTOMAN_FROM_LEFT_COORD);
 
-    spawner::build_door(&mut gs, String::from("Kapi 2"), Place::OttomanMain, (24, 9), Place::OttomanTop, (24, 34), ItemName::OttomanKey2);
-    spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanTop, (24, 35), Place::OttomanMain, (24, 10));
+    spawner::build_door(&mut gs, String::from("Kapi 2"), Place::OttomanMain, OTTOMAN_TO_TOP_PORTAL_COORD, Place::OttomanTop, OTTOMAN_TOP_FROM_MAIN_COORD, ItemName::OttomanKey2);
+    spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanTop, OTTOMAN_TOP_TO_MAIN_PORTAL_COORD, Place::OttomanMain, OTTOMAN_FROM_TOP_COORD);
 
-    spawner::build_door(&mut gs, String::from("Kapi 3"), Place::OttomanMain, (40, 24), Place::OttomanRight, (15, 24), ItemName::OttomanKey3);
-    spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanRight, (14, 24), Place::OttomanMain, (39, 24));
+    spawner::build_door(&mut gs, String::from("Kapi 3"), Place::OttomanMain, OTTOMAN_TO_RIGHT_PORTAL_COORD, Place::OttomanRight, OTTOMAN_RIGHT_FROM_MAIN_COORD, ItemName::OttomanKey3);
+    spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanRight, OTTOMAN_RIGHT_TO_MAIN_PORTAL_COORD, Place::OttomanMain, OTTOMAN_FROM_RIGHT_COORD);
 
-    spawner::build_door(&mut gs, String::from("Kapi 4"), Place::OttomanMain, (24, 40), Place::OttomanBottom, (24, 15), ItemName::OttomanKey4);
-    spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanBottom, (24, 14), Place::OttomanMain, (24, 39));
+    spawner::build_door(&mut gs, String::from("Kapi 4"), Place::OttomanMain, OTTOMAN_TO_BOTTOM_PORTAL_COORD, Place::OttomanBottom, OTTOMAN_BOTTOM_FROM_MAIN_COORD, ItemName::OttomanKey4);
+    spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanBottom, OTTOMAN_BOTTOM_TO_MAIN_PORTAL_COORD, Place::OttomanMain, OTTOMAN_FROM_BOTTOM_COORD);
 
-    spawner::build_door(&mut gs, String::from("Zaman Kapisi"), Place::OttomanMain, (26, 24), Place::School, (20, 20), ItemName::OttomanKeyMain);
+    spawner::build_door(&mut gs, String::from("Zaman Kapisi"), Place::OttomanMain, OTTOMAN_TO_SCHOOL_PORTAL_COORD, Place::School, SCHOOL_FROM_OTTOMAN_COORD, ItemName::OttomanKeyMain);
 
 
     spawner::build_active_item(&mut gs, ItemName::Book, Place::Library, (19, 19), true);
@@ -274,7 +275,7 @@ fn main() -> rltk::BError {
 
     spawner::build_dormant_item(&mut gs, ItemName::OttomanKeyMain);
 
-    spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::Class, (31, 12),
+    spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::Class, (CLASS_X + CLASS_WIDTH - 2, CLASS_Y + 2),
                        vec!(vec!("Merhaba Onat", "Bugun derste gösterecegim kitaplari kutuphanede unutmusum", "Rica etsem getirebilir misiniz?"),
                             vec!("Super, bir tane daha olmali"),
                             vec!("Cok tesekkurler", "Sana bu anahtari hediye ediyorum"),
@@ -285,7 +286,7 @@ fn main() -> rltk::BError {
                        vec!(2),
                        vec!(0, 2));
 
-    spawner::build_npc(&mut gs, String::from("Gizemli Karakter"), Place::OttomanMain, (28, 24),
+    spawner::build_npc(&mut gs, String::from("Gizemli Karakter"), Place::OttomanMain, (OTTOMAN_MAIN_X + OTTOMAN_MAIN_WIDTH / 2 + 2, OTTOMAN_MAIN_Y + OTTOMAN_MAIN_HEIGHT / 2),
                        vec!(vec!("Merhabalar gelecekten gelen", "Yuzundeki ifadeden anladigim kadar,yla oldukca sasirmis durumdasın ", "O yuzden aciklamama izin ver:"),
                             vec!("Taylan Hoca, tarihi ögrenmek icin bir caba icerisinde olmayanlara iyi bir ders vermek icin onlari gecmise yollar", "Bu sefer de o sanli kisi sensin belli ki"),
                             vec!("Eger kendi zamanina donmek istiyorsan dersini burada, yasayarak ogrenmek zorundasin", "Bu seneki konu Osmanli'da sanat", "Gordugun kapilarin arkasinda, icra ettikleri sanatlari sana anlatacak dort zanaatkar bulunuyor", "Her birini iyice dinle ve isin bitince bana geri don"),
@@ -301,7 +302,7 @@ fn main() -> rltk::BError {
                        vec!(3, 4, 5, 6, 7),
                        vec!(3, 4, 5, 6, 7));
 
-    spawner::build_npc(&mut gs, String::from("Karakter 1"), Place::OttomanLeft, (22, 20),
+    spawner::build_npc(&mut gs, String::from("Karakter 1"), Place::OttomanLeft, (OTTOMAN_LEFT_X + OTTOMAN_LEFT_WIDTH / 2, OTTOMAN_LEFT_Y + OTTOMAN_LEFT_HEIGHT / 2),
                        vec!(vec!("Al bakalim dostum"),
                             vec!("İyi gunler")
                        ),
@@ -311,7 +312,7 @@ fn main() -> rltk::BError {
                        vec!(0),
                        vec!(0));
 
-    spawner::build_npc(&mut gs, String::from("Karakter 2"), Place::OttomanTop, (22, 20),
+    spawner::build_npc(&mut gs, String::from("Karakter 2"), Place::OttomanTop, (OTTOMAN_TOP_X + OTTOMAN_TOP_WIDTH / 2, OTTOMAN_TOP_Y + OTTOMAN_TOP_HEIGHT / 2),
                        vec!(vec!("Al bakalim dostum"),
                             vec!("İyi gunler")
                        ),
@@ -321,7 +322,7 @@ fn main() -> rltk::BError {
                        vec!(0),
                        vec!(0));
 
-    spawner::build_npc(&mut gs, String::from("Karakter 3"), Place::OttomanRight, (22, 20),
+    spawner::build_npc(&mut gs, String::from("Karakter 3"), Place::OttomanRight, (OTTOMAN_RIGHT_X + OTTOMAN_RIGHT_WIDTH / 2, OTTOMAN_RIGHT_Y + OTTOMAN_RIGHT_HEIGHT / 2),
                        vec!(vec!("Al bakalim dostum"),
                             vec!("İyi gunler")
                        ),
@@ -331,7 +332,7 @@ fn main() -> rltk::BError {
                        vec!(0),
                        vec!(0));
 
-    spawner::build_npc(&mut gs, String::from("Karakter 4"), Place::OttomanBottom, (22, 20),
+    spawner::build_npc(&mut gs, String::from("Karakter 4"), Place::OttomanBottom, (OTTOMAN_BOTTOM_X + OTTOMAN_BOTTOM_WIDTH / 2, OTTOMAN_BOTTOM_Y + OTTOMAN_BOTTOM_HEIGHT / 2),
                        vec!(vec!("Al bakalim dostum"),
                             vec!("İyi gunler")
                        ),

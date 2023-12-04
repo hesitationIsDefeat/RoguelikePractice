@@ -1,7 +1,7 @@
 use rltk::Rltk;
 use serde::{Deserialize, Serialize};
 use specs::{Join, World, WorldExt};
-use crate::constants::{BACKGROUND_COLOR, CURRENT_DATE, MAP_HEIGHT, MAP_TILES, MAP_WIDTH, PAST_DATE, PLACE_CLASS_NAME, PLACE_HOME_NAME, PLACE_LIB_NAME, PLACE_OTTOMAN_BOTTOM_NAME, PLACE_OTTOMAN_LEFT_NAME, PLACE_OTTOMAN_MAIN_NAME, PLACE_OTTOMAN_RIGHT_NAME, PLACE_OTTOMAN_TOP_NAME, PLACE_SCHOOL_NAME, SPACE_COLOR, TILE_COLOR, WALL_COLOR};
+use crate::constants::{BACKGROUND_COLOR, CLASS_HEIGHT, CLASS_WIDTH, CLASS_X, CLASS_Y, CURRENT_DATE, HOME_HEIGHT, HOME_WIDTH, HOME_X, HOME_Y, LIBRARY_HEIGHT, LIBRARY_WIDTH, LIBRARY_X, LIBRARY_Y, MAP_HEIGHT, MAP_TILES, MAP_WIDTH, OTTOMAN_BOTTOM_HEIGHT, OTTOMAN_BOTTOM_WIDTH, OTTOMAN_BOTTOM_X, OTTOMAN_BOTTOM_Y, OTTOMAN_LEFT_HEIGHT, OTTOMAN_LEFT_WIDTH, OTTOMAN_LEFT_X, OTTOMAN_LEFT_Y, OTTOMAN_MAIN_HEIGHT, OTTOMAN_MAIN_WIDTH, OTTOMAN_MAIN_X, OTTOMAN_MAIN_Y, OTTOMAN_RIGHT_HEIGHT, OTTOMAN_RIGHT_WIDTH, OTTOMAN_RIGHT_X, OTTOMAN_RIGHT_Y, OTTOMAN_TOP_HEIGHT, OTTOMAN_TOP_WIDTH, OTTOMAN_TOP_X, OTTOMAN_TOP_Y, PAST_DATE, PLACE_CLASS_NAME, PLACE_HOME_NAME, PLACE_LIB_NAME, PLACE_OTTOMAN_BOTTOM_NAME, PLACE_OTTOMAN_LEFT_NAME, PLACE_OTTOMAN_MAIN_NAME, PLACE_OTTOMAN_RIGHT_NAME, PLACE_OTTOMAN_TOP_NAME, PLACE_SCHOOL_NAME, SCHOOL_HEIGHT, SCHOOL_WIDTH, SCHOOL_X, SCHOOL_Y, SPACE_COLOR, TILE_COLOR, WALL_COLOR};
 use super::{BelongsTo, Npc, Portal, Position, Rect, RequiresItem};
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
@@ -113,15 +113,15 @@ impl Map {
             place,
         };
         let created_place: Rect = match place {
-            Place::Home => Rect::new(20, 15, 10, 10),
-            Place::School => Rect::new(9, 9, 30, 20),
-            Place::Class => Rect::new(20, 10, 15, 20),
-            Place::Library => Rect::new(15, 15, 25, 13),
-            Place::OttomanMain => Rect::new(10, 10, 30, 30),
-            Place::OttomanLeft => Rect::new(15, 15, 20, 20),
-            Place::OttomanRight => Rect::new(15, 15, 20, 20),
-            Place::OttomanTop => Rect::new(15, 15, 20, 20),
-            Place::OttomanBottom => Rect::new(15, 15, 20, 20),
+            Place::Home => Rect::new(HOME_X, HOME_Y, HOME_WIDTH, HOME_HEIGHT),
+            Place::School => Rect::new(SCHOOL_X, SCHOOL_Y, SCHOOL_WIDTH, SCHOOL_HEIGHT),
+            Place::Class => Rect::new(CLASS_X, CLASS_Y, CLASS_WIDTH, CLASS_HEIGHT),
+            Place::Library => Rect::new(LIBRARY_X, LIBRARY_Y, LIBRARY_WIDTH, LIBRARY_HEIGHT),
+            Place::OttomanMain => Rect::new(OTTOMAN_MAIN_X, OTTOMAN_MAIN_Y, OTTOMAN_MAIN_WIDTH, OTTOMAN_MAIN_HEIGHT),
+            Place::OttomanLeft => Rect::new(OTTOMAN_LEFT_X, OTTOMAN_LEFT_Y, OTTOMAN_LEFT_WIDTH, OTTOMAN_LEFT_HEIGHT),
+            Place::OttomanRight => Rect::new(OTTOMAN_RIGHT_X, OTTOMAN_RIGHT_Y, OTTOMAN_RIGHT_WIDTH, OTTOMAN_RIGHT_HEIGHT),
+            Place::OttomanTop => Rect::new(OTTOMAN_TOP_X, OTTOMAN_TOP_Y, OTTOMAN_TOP_WIDTH, OTTOMAN_TOP_HEIGHT),
+            Place::OttomanBottom => Rect::new(OTTOMAN_BOTTOM_X, OTTOMAN_BOTTOM_Y, OTTOMAN_BOTTOM_WIDTH, OTTOMAN_BOTTOM_HEIGHT),
         };
         map.apply_room_to_map(&created_place);
 
