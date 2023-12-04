@@ -20,11 +20,11 @@ pub enum Place {
     School,
     Class,
     Library,
-    Ottoman_Main,
-    Ottoman_Left,
-    Ottoman_Right,
-    Ottoman_Top,
-    Ottoman_Bottom,
+    OttomanMain,
+    OttomanLeft,
+    OttomanRight,
+    OttomanTop,
+    OttomanBottom,
 }
 
 impl Place {
@@ -34,17 +34,17 @@ impl Place {
             Place::School => PLACE_SCHOOL_NAME,
             Place::Class => PLACE_CLASS_NAME,
             Place::Library => PLACE_LIB_NAME,
-            Place::Ottoman_Main => PLACE_OTTOMAN_MAIN_NAME,
-            Place::Ottoman_Left => PLACE_OTTOMAN_LEFT_NAME,
-            Place::Ottoman_Right => PLACE_OTTOMAN_RIGHT_NAME,
-            Place::Ottoman_Top => PLACE_OTTOMAN_TOP_NAME,
-            Place::Ottoman_Bottom => PLACE_OTTOMAN_BOTTOM_NAME
+            Place::OttomanMain => PLACE_OTTOMAN_MAIN_NAME,
+            Place::OttomanLeft => PLACE_OTTOMAN_LEFT_NAME,
+            Place::OttomanRight => PLACE_OTTOMAN_RIGHT_NAME,
+            Place::OttomanTop => PLACE_OTTOMAN_TOP_NAME,
+            Place::OttomanBottom => PLACE_OTTOMAN_BOTTOM_NAME
         })
     }
     pub fn get_year(&self) -> String {
         String::from(match self {
             Place::School | Place::Home | Place::Class | Place::Library => CURRENT_DATE,
-            Place::Ottoman_Main | Place::Ottoman_Left | Place::Ottoman_Right | Place::Ottoman_Top | Place::Ottoman_Bottom => PAST_DATE,
+            Place::OttomanMain | Place::OttomanLeft | Place::OttomanRight | Place::OttomanTop | Place::OttomanBottom => PAST_DATE,
         })
     }
 }
@@ -117,11 +117,11 @@ impl Map {
             Place::School => Rect::new(9, 9, 30, 20),
             Place::Class => Rect::new(20, 10, 15, 20),
             Place::Library => Rect::new(15, 15, 25, 13),
-            Place::Ottoman_Main => Rect::new(10, 10, 30, 30),
-            Place::Ottoman_Left => Rect::new(15, 15, 20, 20),
-            Place::Ottoman_Right => Rect::new(15, 15, 20, 20),
-            Place::Ottoman_Top => Rect::new(15, 15, 20, 20),
-            Place::Ottoman_Bottom => Rect::new(15, 15, 20, 20),
+            Place::OttomanMain => Rect::new(10, 10, 30, 30),
+            Place::OttomanLeft => Rect::new(15, 15, 20, 20),
+            Place::OttomanRight => Rect::new(15, 15, 20, 20),
+            Place::OttomanTop => Rect::new(15, 15, 20, 20),
+            Place::OttomanBottom => Rect::new(15, 15, 20, 20),
         };
         map.apply_room_to_map(&created_place);
 

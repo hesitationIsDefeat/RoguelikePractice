@@ -232,30 +232,114 @@ fn main() -> rltk::BError {
 
     spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Home, (19, 20), Place::School, (38, 20));
     spawner::build_portal(&mut gs, String::from("Ev Kapisi"), Place::School, (39, 20), Place::Home, (20, 20));
+
     spawner::build_portal(&mut gs, String::from("M2152 Kapisi"), Place::School, (24, 29), Place::Class, (20, 13));
     spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Class, (19, 13), Place::School, (24, 28));
+
     spawner::build_portal(&mut gs, String::from("Kutuphane Kapisi"), Place::School, (8, 20), Place::Library, (39, 20));
     spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Library, (40, 20), Place::School, (9, 20));
-    spawner::build_door(&mut gs, String::from("Gizli Kapi"), Place::School, (24, 8), Place::Ottoman_Main, (25, 24), ItemName::SecretGateKey);
 
-    spawner::build_door(&mut gs, String::from("Kapi 1"), Place::Ottoman_Main, (9, 24), Place::Ottoman_Left, (20, 20), ItemName::OttomanKey1);
-    spawner::build_door(&mut gs, String::from("Kapi 2"), Place::Ottoman_Main, (24, 9), Place::Ottoman_Top, (20, 20), ItemName::OttomanKey2);
-    spawner::build_door(&mut gs, String::from("Kapi 3"), Place::Ottoman_Main, (40, 24), Place::Ottoman_Right, (20, 20), ItemName::OttomanKey3);
-    spawner::build_door(&mut gs, String::from("Kapi 4"), Place::Ottoman_Main, (24, 40), Place::Ottoman_Bottom, (20, 20), ItemName::OttomanKey4);
-    spawner::build_door(&mut gs, String::from("Zaman Kapisi"), Place::Ottoman_Main, (1, 1), Place::Ottoman_Left, (20, 20), ItemName::OttomanKeyMain);
+    spawner::build_door(&mut gs, String::from("Gizli Kapi"), Place::School, (24, 8), Place::OttomanMain, (25, 24), ItemName::SecretGateKey);
+
+    spawner::build_door(&mut gs, String::from("Kapi 1"), Place::OttomanMain, (9, 24), Place::OttomanLeft, (34, 24), ItemName::OttomanKey1);
+    spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanLeft, (35, 24), Place::OttomanMain, (10, 24));
+
+    spawner::build_door(&mut gs, String::from("Kapi 2"), Place::OttomanMain, (24, 9), Place::OttomanTop, (24, 34), ItemName::OttomanKey2);
+    spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanTop, (24, 35), Place::OttomanMain, (24, 10));
+
+    spawner::build_door(&mut gs, String::from("Kapi 3"), Place::OttomanMain, (40, 24), Place::OttomanRight, (15, 24), ItemName::OttomanKey3);
+    spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanRight, (14, 24), Place::OttomanMain, (39, 24));
+
+    spawner::build_door(&mut gs, String::from("Kapi 4"), Place::OttomanMain, (24, 40), Place::OttomanBottom, (24, 15), ItemName::OttomanKey4);
+    spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanBottom, (24, 14), Place::OttomanMain, (24, 39));
+
+    spawner::build_door(&mut gs, String::from("Zaman Kapisi"), Place::OttomanMain, (26, 24), Place::School, (20, 20), ItemName::OttomanKeyMain);
 
 
     spawner::build_active_item(&mut gs, ItemName::Book, Place::Library, (19, 19), true);
     spawner::build_active_item(&mut gs, ItemName::Book, Place::Library, (20, 20), true);
     spawner::build_dormant_item(&mut gs, ItemName::SecretGateKey);
 
+    spawner::build_dormant_item(&mut gs, ItemName::OttomanKey1);
+    spawner::build_dormant_item(&mut gs, ItemName::OttomanReward1);
+
+    spawner::build_dormant_item(&mut gs, ItemName::OttomanKey2);
+    spawner::build_dormant_item(&mut gs, ItemName::OttomanReward2);
+
+    spawner::build_dormant_item(&mut gs, ItemName::OttomanKey3);
+    spawner::build_dormant_item(&mut gs, ItemName::OttomanReward3);
+
+    spawner::build_dormant_item(&mut gs, ItemName::OttomanKey4);
+    spawner::build_dormant_item(&mut gs, ItemName::OttomanReward4);
+
+    spawner::build_dormant_item(&mut gs, ItemName::OttomanKeyMain);
 
     spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::Class, (31, 12),
                        vec!(vec!("Merhaba Onat", "Bugun derste gösterecegim kitaplari kutuphanede unutmusum", "Rica etsem getirebilir misiniz?"),
                             vec!("Super, bir tane daha olmali"),
                             vec!("Cok tesekkurler", "Sana bu anahtari hediye ediyorum"),
                             vec!("Iyi gunler")),
-                       Some(vec!(ItemName::Book, ItemName::Book)), Some(vec!(ItemName::SecretGateKey)), vec!(0, 1), vec!(2), vec!(0, 2));
+                       Some(vec!(ItemName::Book, ItemName::Book)),
+                       Some(vec!(ItemName::SecretGateKey)),
+                       vec!(0, 1),
+                       vec!(2),
+                       vec!(0, 2));
+
+    spawner::build_npc(&mut gs, String::from("Gizemli Karakter"), Place::OttomanMain, (28, 24),
+                       vec!(vec!("Merhabalar gelecekten gelen", "Yuzundeki ifadeden anladigim kadar,yla oldukca sasirmis durumdasın ", "O yuzden aciklamama izin ver:"),
+                            vec!("Taylan Hoca, tarihi ögrenmek icin bir caba icerisinde olmayanlara iyi bir ders vermek icin onlari gecmise yollar", "Bu sefer de o sanli kisi sensin belli ki"),
+                            vec!("Eger kendi zamanina donmek istiyorsan dersini burada, yasayarak ogrenmek zorundasin", "Bu seneki konu Osmanli'da sanat", "Gordugun kapilarin arkasinda, icra ettikleri sanatlari sana anlatacak dort zanaatkar bulunuyor", "Her birini iyice dinle ve isin bitince bana geri don"),
+                            vec!("Iyi dersler"),
+                            vec!("Demek ilk dersi dinledin", "Afferin", "Şimdi ikinci ders"),
+                            vec!("Demek ikinci dersi dinledin", "Afferin", "Şimdi ucuncu ders"),
+                            vec!("Demek ucuncu dersi dinledin", "Afferin", "Şimdi dorduncu ders"),
+                            vec!("Demek dorduncu dersi dinledin", "Afferin", "Artik kendi zamanina donebilirsin"),
+                            vec!("Kendine iyi bak")),
+                       Some(vec!(ItemName::OttomanReward1, ItemName::OttomanReward2, ItemName::OttomanReward3, ItemName::OttomanReward4)),
+                       Some(vec!(ItemName::OttomanKey1, ItemName::OttomanKey2, ItemName::OttomanKey3, ItemName::OttomanKey4, ItemName::OttomanKeyMain)),
+                       vec!(3, 4, 5, 6),
+                       vec!(3, 4, 5, 6, 7),
+                       vec!(3, 4, 5, 6, 7));
+
+    spawner::build_npc(&mut gs, String::from("Karakter 1"), Place::OttomanLeft, (22, 20),
+                       vec!(vec!("Al bakalim dostum"),
+                            vec!("İyi gunler")
+                       ),
+                       None,
+                       Some(vec!(ItemName::OttomanReward1)),
+                       vec!(),
+                       vec!(0),
+                       vec!(0));
+
+    spawner::build_npc(&mut gs, String::from("Karakter 2"), Place::OttomanTop, (22, 20),
+                       vec!(vec!("Al bakalim dostum"),
+                            vec!("İyi gunler")
+                       ),
+                       None,
+                       Some(vec!(ItemName::OttomanReward2)),
+                       vec!(),
+                       vec!(0),
+                       vec!(0));
+
+    spawner::build_npc(&mut gs, String::from("Karakter 3"), Place::OttomanRight, (22, 20),
+                       vec!(vec!("Al bakalim dostum"),
+                            vec!("İyi gunler")
+                       ),
+                       None,
+                       Some(vec!(ItemName::OttomanReward3)),
+                       vec!(),
+                       vec!(0),
+                       vec!(0));
+
+    spawner::build_npc(&mut gs, String::from("Karakter 4"), Place::OttomanBottom, (22, 20),
+                       vec!(vec!("Al bakalim dostum"),
+                            vec!("İyi gunler")
+                       ),
+                       None,
+                       Some(vec!(ItemName::OttomanReward4)),
+                       vec!(),
+                       vec!(0),
+                       vec!(0));
 
     let map = Map::new_map_rooms_and_corridors(&mut gs.ecs, Place::Home);
     gs.ecs.insert(map);
@@ -266,8 +350,12 @@ fn main() -> rltk::BError {
     gs.ecs.insert(RunState::Game);
     gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
     gs.ecs.insert(Objective {
-        objectives: vec!("Sınıfa git ve Taylan Hoca ile konus".to_string(), "Taylan Hoca'ya kitapları ulastir".to_string(),
-                         "Gizli gecidi bul ve arastir".to_string()),
+        objectives: vec!("Sınıfa git ve Taylan Hoca ile konus".to_string(), "Taylan Hoca'ya kitapları ulastir".to_string(), "Gizli gecidi bul ve arastir".to_string(),
+                         "Ilk dersi dinle".to_string(), "Hediye 1'i gotur".to_string(),
+                         "Ikinci dersi dinle".to_string(), "Hediye 2'i gotur".to_string(),
+                         "Ucuncu dersi dinle".to_string(), "Hediye 3'i gotur".to_string(),
+                         "Dorduncu dersi dinle".to_string(), "Hediye 4'i gotur".to_string(),
+                         "Kendi zamanina don".to_string()),
         index: 0,
     });
 

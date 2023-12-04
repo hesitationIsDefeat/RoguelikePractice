@@ -5,7 +5,7 @@ pub const SCREEN_WIDTH: i32 = 80;
 pub const SCREEN_HEIGHT: i32 = 50;
 // MAP
 pub const MAP_WIDTH: i32 = 50;
-pub const MAP_HEIGHT: i32 = 43;
+pub const MAP_HEIGHT: i32 = 40;
 pub const MAP_TILES: i32 = MAP_WIDTH * MAP_HEIGHT;
 // MENU
 pub const TITLE_Y: i32 = SCREEN_HEIGHT / 3;
@@ -36,6 +36,8 @@ pub const OBJECTIVE_BOX_Y: i32 = PLACE_DATE_BOX_Y - OBJECTIVE_BOX_HEIGHT - 1;
 pub const OBJECTIVE_BOX_WIDTH: i32 = INVENTORY_WIDTH;
 pub const OBJECTIVE_BOX_GAP: i32 = OBJECTIVE_BOX_WIDTH - 4;
 pub const OBJECTIVE_BOX_HEIGHT: i32 = 10;
+pub const OBJECTIVE_BANNER: &str = "Gorev";
+pub const OBJECTIVE_BANNER_X: i32 = OBJECTIVE_BOX_X + OBJECTIVE_BOX_WIDTH / 2 - (OBJECTIVE_BANNER.len() / 2) as i32;
 pub const OBJECTIVE_X: i32 = OBJECTIVE_BOX_X + 2;
 pub const OBJECTIVE_Y: i32 = OBJECTIVE_BOX_Y + 2;
 pub const OBJECTIVE_DELTA_Y: i32 = 2;
@@ -52,11 +54,15 @@ pub const PLACE_OTTOMAN_BOTTOM_NAME: &str = "Osmanli Asagi";
 pub const CURRENT_DATE: &str = "2023";
 pub const PAST_DATE: &str = "1900";
 pub const PLACE_DATE_BOX_X: i32 = INVENTORY_X;
-pub const PLACE_DATE_BOX_Y: i32 = INVENTORY_Y - 3;
+pub const PLACE_DATE_BOX_Y: i32 = INVENTORY_Y - PLACE_DATE_BOX_HEIGHT - 1;
 pub const PLACE_DATE_BOX_WIDTH: i32 = INVENTORY_WIDTH;
-pub const PLACE_DATE_BOX_HEIGHT: i32 = 2;
+pub const PLACE_DATE_BOX_HEIGHT: i32 = 6;
+pub const PLACE_DATE_BOX_GAP: i32 = PLACE_DATE_BOX_WIDTH - 4;
+pub const PLACE_DATE_BANNER: &str = "Mekan/Zaman";
+pub const PLACE_DATE_BANNER_X: i32 = PLACE_DATE_X + PLACE_DATE_BOX_WIDTH / 2 - (PLACE_DATE_BANNER.len() / 2) as i32;
 pub const PLACE_DATE_X: i32 = PLACE_DATE_BOX_X + 2;
-pub const PLACE_DATE_Y: i32 = PLACE_DATE_BOX_Y + 1;
+pub const PLACE_DATE_Y: i32 = PLACE_DATE_BOX_Y + 2;
+pub const PLACE_DATE_DELTA_Y: i32 = 2;
 // INVENTORY
 pub const INVENTORY_X: i32 = MAP_WIDTH;
 pub const INVENTORY_Y: i32 = MAP_HEIGHT - INVENTORY_HEIGHT - 1;
@@ -65,16 +71,20 @@ pub const INVENTORY_WIDTH: i32 = SCREEN_WIDTH - MAP_WIDTH - 1;
 pub const INVENTORY_HEIGHT: i32 = 19;
 pub const INVENTORY_BANNER: &str = "Esyalar";
 pub const INVENTORY_BANNER_X: i32 = INVENTORY_X + INVENTORY_WIDTH / 2 - (INVENTORY_BANNER.len() / 2) as i32;
-pub const INVENTORY_ITEMS_X: i32 = INVENTORY_X + 4;
+pub const INVENTORY_ITEMS_X: i32 = INVENTORY_X + 2 * INVENTORY_DELTA_Y;
+pub const INVENTORY_ITEMS_Y: i32 = INVENTORY_Y + INVENTORY_DELTA_Y;
 // ITEMS
 pub const ITEM_BOOK_NAME: &str = "Taylan Hoca'nin Kitabi";
 pub const ITEM_SECRET_GATE_KEY_NAME: &str = "Gizli Gecit Anahtari";
 pub const OTTOMAN_KEY_1_NAME: &str = "Kapi 1 Anahtari";
+pub const OTTOMAN_REWARD_1_NAME: &str = "Odul 1";
 pub const OTTOMAN_KEY_2_NAME: &str = "Kapi 2 Anahtari";
+pub const OTTOMAN_REWARD_2_NAME: &str = "Odul 2";
 pub const OTTOMAN_KEY_3_NAME: &str = "Kapi 3 Anahtari";
+pub const OTTOMAN_REWARD_3_NAME: &str = "Odul 3";
 pub const OTTOMAN_KEY_4_NAME: &str = "Kapi 4 Anahtari";
+pub const OTTOMAN_REWARD_4_NAME: &str = "Odul 4";
 pub const OTTOMAN_KEY_MAIN_NAME: &str = "Zaman Kapisi Anahtari";
-
 // NPC INTERACTION
 pub const NPC_INTERACTION_SCREEN_WIDTH: i32 = 40;
 pub const NPC_INTERACTION_SCREEN_HEIGHT: i32 = 40;
@@ -87,6 +97,29 @@ pub const NPC_INTERACTION_DIALOGUE_HEADING_Y: i32 = NPC_INTERACTION_SCREEN_Y + N
 pub const NPC_INTERACTION_GLYPH_X: i32 = NPC_INTERACTION_SCREEN_X + NPC_INTERACTION_DIALOGUE_DELTA;
 pub const NPC_INTERACTION_DIALOGUE_X: i32 = NPC_INTERACTION_GLYPH_X + NPC_INTERACTION_DIALOGUE_DELTA;
 pub const NPC_INTERACTION_DIALOGUE_Y: i32 = NPC_INTERACTION_DIALOGUE_HEADING_Y + NPC_INTERACTION_DIALOGUE_DELTA;
+// ROOMS
+// HOME
+pub const HOME_X: i32 = 0;
+pub const HOME_Y: i32 = 0;
+pub const HOME_WIDTH: i32 = 0;
+pub const HOME_HEIGHT: i32 = 0;
+
+// SCHOOL
+
+// M2152
+
+// LIBRARY
+
+// OTTOMAN MAIN
+
+// OTTOMAN LEFT
+
+// OTTOMAN TOP
+
+// OTTOMAN RIGHT
+
+// OTTOMAN BOTTOM
+
 // COLORS
 pub const BACKGROUND_COLOR: RGB = RGB { r: 0., g: 0., b: 0. };
 // COLORS MENU
@@ -114,9 +147,11 @@ pub const CONSOLE_LOG_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 // COLORS OBJECTIVE
 pub const OBJECTIVE_BOX_FG: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 pub const OBJECTIVE_BOX_BG: RGB = RGB { r: 0., g: 0., b: 0. };
+pub const OBJECTIVE_BANNER_COLOR: RGB = RGB { r: 238f32 / 255.0, g: 253f32 / 255.0, b: 28f32 / 255.0 };
 // COLORS PLACE DATE
 pub const PLACE_DATE_BOX_FG: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 pub const PLACE_DATE_BOX_BG: RGB = RGB { r: 0., g: 0., b: 0. };
+pub const PLACE_DATE_BANNER_COLOR: RGB = RGB { r: 238f32 / 255.0, g: 253f32 / 255.0, b: 28f32 / 255.0 };
 pub const PLACE_DATE_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };
 // COLORS INVENTORY
 pub const INVENTORY_BORDER_COLOR: RGB = RGB { r: 1.0, g: 1.0, b: 1.0 };

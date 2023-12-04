@@ -1,7 +1,7 @@
 use rltk::{RGB, Rltk, Point, WHITE, BLACK, VirtualKeyCode, RED, GREY, YELLOW};
 use specs::prelude::*;
 use crate::{BelongsTo, ContainsItems, Interaction, Item, Map, Name, Npc, Objective, Place, Portal, Position, Renderable, RequiresItem, RequiresItems, RunState, save_load_system, State, Stored, TargetedPosition};
-use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CREDITS_STR, CURSOR_COLOR, MENU_DELTA_Y, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_COLOR, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_DELTA_Y, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_STRING_COLOR, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, MAP_HEIGHT, MENU_ITEM_1_Y, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NPC_INTERACTION_DIALOGUE_DELTA, NPC_INTERACTION_DIALOGUE_HEADING_X, NPC_INTERACTION_DIALOGUE_HEADING_Y, NPC_INTERACTION_DIALOGUE_X, NPC_INTERACTION_DIALOGUE_Y, NPC_INTERACTION_GLYPH_X, NPC_INTERACTION_SCREEN_BG, NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_GAP_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT, NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y, QUIT_GAME_STR, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y, CREDITS_1_COLOR, CREDIT_1_STR, CREDITS_THANKS_Y, CREDIT_3_Y, CREDIT_2_Y, CREDIT_1_Y, CREDITS_3_COLOR, CREDITS_2_COLOR, CREDITS_THANKS_COLOR, CREDIT_2_STR, CREDIT_3_STR, CREDITS_THANKS_STR, PLACE_DATE_BOX_X, PLACE_DATE_BOX_Y, PLACE_DATE_BOX_WIDTH, PLACE_DATE_BOX_HEIGHT, PLACE_DATE_BOX_FG, PLACE_DATE_BOX_BG, PLACE_DATE_X, PLACE_DATE_Y, PLACE_DATE_COLOR, CONSOLE_LOG_COLOR, OBJECTIVE_BOX_GAP, OBJECTIVE_X, OBJECTIVE_Y, OBJECTIVE_DELTA_Y, OBJECTIVE_BOX_X, OBJECTIVE_BOX_Y, OBJECTIVE_BOX_WIDTH, OBJECTIVE_BOX_HEIGHT, OBJECTIVE_BOX_FG, OBJECTIVE_BOX_BG};
+use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CREDITS_STR, CURSOR_COLOR, MENU_DELTA_Y, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_COLOR, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_DELTA_Y, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_STRING_COLOR, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, MAP_HEIGHT, MENU_ITEM_1_Y, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NPC_INTERACTION_DIALOGUE_DELTA, NPC_INTERACTION_DIALOGUE_HEADING_X, NPC_INTERACTION_DIALOGUE_HEADING_Y, NPC_INTERACTION_DIALOGUE_X, NPC_INTERACTION_DIALOGUE_Y, NPC_INTERACTION_GLYPH_X, NPC_INTERACTION_SCREEN_BG, NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_GAP_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT, NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y, QUIT_GAME_STR, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y, CREDITS_1_COLOR, CREDIT_1_STR, CREDITS_THANKS_Y, CREDIT_3_Y, CREDIT_2_Y, CREDIT_1_Y, CREDITS_3_COLOR, CREDITS_2_COLOR, CREDITS_THANKS_COLOR, CREDIT_2_STR, CREDIT_3_STR, CREDITS_THANKS_STR, PLACE_DATE_BOX_X, PLACE_DATE_BOX_Y, PLACE_DATE_BOX_WIDTH, PLACE_DATE_BOX_HEIGHT, PLACE_DATE_BOX_FG, PLACE_DATE_BOX_BG, PLACE_DATE_X, PLACE_DATE_Y, PLACE_DATE_COLOR, CONSOLE_LOG_COLOR, OBJECTIVE_BOX_GAP, OBJECTIVE_X, OBJECTIVE_Y, OBJECTIVE_DELTA_Y, OBJECTIVE_BOX_X, OBJECTIVE_BOX_Y, OBJECTIVE_BOX_WIDTH, OBJECTIVE_BOX_HEIGHT, OBJECTIVE_BOX_FG, OBJECTIVE_BOX_BG, PLACE_DATE_BOX_GAP, PLACE_DATE_DELTA_Y, PLACE_DATE_BANNER_X, PLACE_DATE_BANNER, PLACE_DATE_BANNER_COLOR, OBJECTIVE_BANNER_X, OBJECTIVE_BANNER, OBJECTIVE_BANNER_COLOR, INVENTORY_ITEMS_Y};
 use crate::gamelog::GameLog;
 use crate::items::ItemName;
 
@@ -145,14 +145,16 @@ fn draw_objective(ecs: &World, ctx: &mut Rltk) {
     let objective = ecs.fetch::<Objective>();
     ctx.draw_box(OBJECTIVE_BOX_X, OBJECTIVE_BOX_Y, OBJECTIVE_BOX_WIDTH,
                  OBJECTIVE_BOX_HEIGHT, OBJECTIVE_BOX_FG, OBJECTIVE_BOX_BG);
+    ctx.print_color(OBJECTIVE_BANNER_X, OBJECTIVE_BOX_Y, OBJECTIVE_BANNER_COLOR, BACKGROUND_COLOR, OBJECTIVE_BANNER);
     print_as_paragraph(ctx, &objective.objectives[objective.index], OBJECTIVE_BOX_GAP as usize, OBJECTIVE_X, OBJECTIVE_Y, OBJECTIVE_DELTA_Y);
 }
 
 fn draw_time_and_date(ecs: &World, ctx: &mut Rltk) {
     ctx.draw_box(PLACE_DATE_BOX_X, PLACE_DATE_BOX_Y, PLACE_DATE_BOX_WIDTH, PLACE_DATE_BOX_HEIGHT, PLACE_DATE_BOX_FG, PLACE_DATE_BOX_BG);
+    ctx.print_color(PLACE_DATE_BANNER_X, PLACE_DATE_BOX_Y, PLACE_DATE_BANNER_COLOR, BACKGROUND_COLOR, PLACE_DATE_BANNER);
     let current_place = ecs.fetch::<Place>();
     let place_name_year_str = format!("{}, {}", current_place.get_name(), current_place.get_year());
-    ctx.print_color(PLACE_DATE_X, PLACE_DATE_Y, PLACE_DATE_COLOR, BACKGROUND_COLOR, place_name_year_str);
+    print_as_paragraph(ctx, place_name_year_str.as_str(), PLACE_DATE_BOX_GAP as usize, PLACE_DATE_X, PLACE_DATE_Y, PLACE_DATE_DELTA_Y);
 }
 
 fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {
@@ -223,7 +225,7 @@ fn draw_inventory(ecs: &World, ctx: &mut Rltk) {
     let names = ecs.read_storage::<Name>();
     let backpack = ecs.read_storage::<Stored>();
 
-    let mut y = 25;
+    let mut y = INVENTORY_ITEMS_Y;
     ctx.print_color(INVENTORY_BANNER_X, y - 2, INVENTORY_BANNER_COLOR, BACKGROUND_COLOR, INVENTORY_BANNER);
 
     for (_pack, name) in (&backpack, &names).join() {
@@ -275,6 +277,8 @@ pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usi
     let names = ecs.read_storage::<Name>();
     let renderables = ecs.read_storage::<Renderable>();
     let items = ecs.read_storage::<Item>();
+    let belongs = ecs.read_storage::<BelongsTo>();
+    let current_place = ecs.fetch::<Place>();
     let mut contains_items = ecs.write_storage::<ContainsItems>();
     let mut log = ecs.write_resource::<GameLog>();
     let mut has_interaction = ecs.write_storage::<Interaction>();
@@ -282,12 +286,17 @@ pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usi
     let mut stored_items = ecs.write_storage::<Stored>();
     let mut requires_items = ecs.write_storage::<RequiresItems>();
     let entities = ecs.entities();
-    for (_npc, interaction, pos, name, rend, cont, req) in (&npcs, &mut has_interaction, &positions, &names, &renderables, &mut contains_items, &mut requires_items).join() {
-        if pos.x == target.x && pos.y == target.y {
+    for (_npc, interaction, pos, name, rend, cont, req, bel) in (&npcs, &mut has_interaction, &positions, &names, &renderables, &mut contains_items, &mut requires_items, &belongs).join() {
+        if bel.domain == *current_place && pos.x == target.x && pos.y == target.y {
             let mut increment_dialogue_index = interaction.dialogue_index < interaction.dialogues.len() - 1;
+            println!("Increment dialogue: {}, dialogue_ındex: {}, interaction.dialogue_index: {}", increment_dialogue_index, dialogue_index, interaction.dialogue_index);
             if dialogue_index >= interaction.dialogues[interaction.dialogue_index].len() {
                 if interaction.give_item_indices.contains(&interaction.dialogue_index) {
+                    if interaction.get_item_indices.contains(&interaction.dialogue_index) {
+                        increment_dialogue_index = false;
+                    }
                     let removed_item_name = cont.items.remove(0);
+                    interaction.give_item_indices.remove(0);
                     let item_name = removed_item_name.to_string();
                     for (item, ent) in (&items, &entities).join() {
                         if item.name == removed_item_name {
@@ -296,13 +305,14 @@ pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usi
                         }
                     }
                     log.entries.push(format!("Esyayi aldin: {}", item_name))
-                }
-                if interaction.get_item_indices.contains(&interaction.dialogue_index) {
+                } else if interaction.get_item_indices.contains(&interaction.dialogue_index) {
+                    println!("Enter get_item, index: {}", &interaction.dialogue_index);
                     let mut dont_have_the_item = true;
                     for (item, ent) in (&items, &entities).join() {
                         if req.items.get(0).unwrap() == &item.name && stored_items.contains(ent) {
                             let required_item = req.items.remove(0);
                             let required_item_name = required_item.to_string();
+                            interaction.get_item_indices.remove(0);
                             stored_items.remove(ent);
                             log.entries.push(format!("Esya kullanildi: {}", required_item_name));
                             dont_have_the_item = false;
@@ -314,6 +324,7 @@ pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usi
                         increment_dialogue_index = false;
                     }
                 }
+
                 if interaction.change_objective_indices.contains(&interaction.dialogue_index) {
                     let mut objective = ecs.fetch_mut::<Objective>();
                     objective.index += 1;
@@ -342,6 +353,7 @@ pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usi
                     return NpcInteractionResult::NextDialogue;
                 }
             }
+            break;
         }
     }
     NpcInteractionResult::NoResponse
