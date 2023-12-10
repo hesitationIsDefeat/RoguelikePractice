@@ -12,6 +12,7 @@ mod save_load_system;
 mod constants;
 mod items;
 mod systems;
+mod npcs;
 
 use player::*;
 pub use components::*;
@@ -26,11 +27,13 @@ use crate::items::ItemName;
 #[derive(PartialEq, Clone, Copy)]
 pub enum RunState {
     Menu { menu_selection: MainMenuSelection },
+    EnterName,
     Game,
     SaveGame,
     UseInventory,
     InteractNpc { index: usize },
     Credits,
+    GameOver,
 }
 
 pub struct State {
@@ -45,6 +48,10 @@ impl State {
         let mut item_adjustment_system = systems::ItemAdjustmentSystem {};
         item_adjustment_system.run_now(&self.ecs);
 
+        let mut door_reveal_system = systems::DoorRevealSystem {};
+        door_reveal_system.run_now(&self.ecs);
+
+
         self.ecs.maintain();
     }
 }
@@ -58,9 +65,19 @@ impl GameState for State {
         }
         ctx.cls();
 
+        {
+            let items = self.ecs.read_storage::<Item>();
+            let stored = self.ecs.read_storage::<Stored>();
+            let current_place = self.ecs.read_resource::<Place>();
+            for (item, _) in (&items, &stored).join() {
+                if *current_place == Place::School && item.name == ItemName::OttomanKeyMain {
+                    run_state = RunState::GameOver;
+                }
+            }
+        }
+
         match run_state {
-            RunState::Menu { .. } => {}
-            RunState::Credits => {}
+            RunState::Menu { .. } | RunState::Credits | RunState::EnterName | RunState::GameOver => {}
             _ => {
                 {
                     let current_place = *self.ecs.fetch::<Place>();
@@ -105,7 +122,7 @@ impl GameState for State {
                     MainMenuResult::NoSelection { selected } => run_state = RunState::Menu { menu_selection: selected },
                     MainMenuResult::Selected { selected } => {
                         match selected {
-                            MainMenuSelection::NewGame => run_state = RunState::Game,
+                            MainMenuSelection::NewGame => run_state = RunState::EnterName,
                             MainMenuSelection::LoadGame => {
                                 save_load_system::load_game(&mut self.ecs);
                                 run_state = RunState::Game;
@@ -116,6 +133,20 @@ impl GameState for State {
                             }
                         }
                     }
+                }
+            }
+            RunState::EnterName => {
+                let done = gui::draw_enter_name(&mut self.ecs, ctx);
+                if done {
+                    let mut player_name = self.ecs.fetch_mut::<PlayerName>();
+                    let mut names = self.ecs.write_storage::<Name>();
+                    let players = self.ecs.read_storage::<Player>();
+                    for (name, _player) in (&mut names, &players).join() {
+                        name.name = String::from(player_name.name.as_str());
+                    }
+                    run_state = RunState::Game;
+                } else {
+                    run_state = RunState::EnterName
                 }
             }
             RunState::Credits => {
@@ -153,12 +184,13 @@ impl GameState for State {
 
                         for (pos, req, ent) in (&positions, &requires_item, &entities).join() {
                             if pos.x == target_pos.x && pos.y == target_pos.y {
-                                if req.item == item {
+                                if req.key == item {
                                     log.entries.push(format!("Esya kullanildi: {}", item.to_string()));
                                     if self.ecs.read_storage::<PermanentItem>().get(ent).is_none() {
                                         self.ecs.write_storage::<Stored>().remove(ent);
                                     }
                                     if self.ecs.read_storage::<Portal>().get(ent).is_some() {
+                                        println!("Changed to portal");
                                         map.tiles[Map::xy_to_tile(pos.x, pos.y)] = TileType::Portal;
                                     }
                                     barriers_to_remove.push(ent);
@@ -181,9 +213,15 @@ impl GameState for State {
                     NpcInteractionResult::Done => {
                         run_state = RunState::Game;
                     }
-                    NpcInteractionResult::NextDialogue => {
-                        run_state = RunState::InteractNpc { index: index + 1 };
+                    NpcInteractionResult::NextDialogue { index } => {
+                        run_state = RunState::InteractNpc { index };
                     }
+                }
+            }
+            RunState::GameOver => {
+                gui::draw_game_over(ctx);
+                if let Some(_) = ctx.key {
+                    std::process::exit(0);
                 }
             }
         }
@@ -223,13 +261,17 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Npc>();
     gs.ecs.register::<Objective>();
     gs.ecs.register::<Interaction>();
+    gs.ecs.register::<DormantPosition>();
+    gs.ecs.register::<RevealerInformation>();
+    gs.ecs.register::<PlayerName>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     gs.ecs.insert(Place::Home);
+    gs.ecs.insert(PlayerName { name: "".to_string() });
 
     let player_coord = (25, 20);
     let log = GameLog::new(vec!["Oyuna hosgeldin!".to_string()]);
-    let player_entity = spawner::build_player(&mut gs, String::from("Onat"), player_coord);
+    let player_entity = spawner::build_player(&mut gs, String::from(""), player_coord);
 
     spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Home, HOME_TO_SCHOOL_PORTAL_COORD, Place::School, SCHOOL_FROM_HOME_COORD);
     spawner::build_portal(&mut gs, String::from("Ev Kapisi"), Place::School, SCHOOL_TO_HOME_PORTAL_COORD, Place::Home, HOME_FROM_SCHOOL_COORD);
@@ -240,7 +282,9 @@ fn main() -> rltk::BError {
     spawner::build_portal(&mut gs, String::from("Kutuphane Kapisi"), Place::School, SCHOOL_TO_LIBRARY_PORTAL_COORD, Place::Library, LIBRARY_FROM_SCHOOL_COORD);
     spawner::build_portal(&mut gs, String::from("Okul Kapisi"), Place::Library, LIBRARY_TO_SCHOOL_PORTAL_COORD, Place::School, SCHOOL_FROM_LIBRARY_COORD);
 
-    spawner::build_door(&mut gs, String::from("Gizli Kapi"), Place::School, SCHOOL_TO_OTTOMAN_PORTAL_COORD, Place::OttomanMain, OTTOMAN_FROM_SCHOOL_COORD, ItemName::SecretGateKey);
+    spawner::build_dormant_door(&mut gs, String::from("Gizli Kapi"), Place::School, SCHOOL_TO_OTTOMAN_PORTAL_COORD, Place::OttomanMain, OTTOMAN_FROM_SCHOOL_COORD, ItemName::SecretGateKey,
+                                (SCHOOL_TO_OTTOMAN_PORTAL_COORD.0 - 2, SCHOOL_TO_OTTOMAN_PORTAL_COORD.0 + 2), (SCHOOL_TO_OTTOMAN_PORTAL_COORD.1, SCHOOL_TO_OTTOMAN_PORTAL_COORD.1 + 2),
+                                ItemName::SecretGateKey, TileType::Wall);
 
     spawner::build_door(&mut gs, String::from("Kapi 1"), Place::OttomanMain, OTTOMAN_TO_LEFT_PORTAL_COORD, Place::OttomanLeft, OTTOMAN_LEFT_FROM_MAIN_COORD, ItemName::OttomanKey1);
     spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanLeft, OTTOMAN_LEFT_TO_MAIN_PORTAL_COORD, Place::OttomanMain, OTTOMAN_FROM_LEFT_COORD);
@@ -254,7 +298,8 @@ fn main() -> rltk::BError {
     spawner::build_door(&mut gs, String::from("Kapi 4"), Place::OttomanMain, OTTOMAN_TO_BOTTOM_PORTAL_COORD, Place::OttomanBottom, OTTOMAN_BOTTOM_FROM_MAIN_COORD, ItemName::OttomanKey4);
     spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanBottom, OTTOMAN_BOTTOM_TO_MAIN_PORTAL_COORD, Place::OttomanMain, OTTOMAN_FROM_BOTTOM_COORD);
 
-    spawner::build_door(&mut gs, String::from("Zaman Kapisi"), Place::OttomanMain, OTTOMAN_TO_SCHOOL_PORTAL_COORD, Place::School, SCHOOL_FROM_OTTOMAN_COORD, ItemName::OttomanKeyMain);
+    spawner::build_dormant_door(&mut gs, String::from("Zaman Kapisi"), Place::OttomanMain, OTTOMAN_TO_SCHOOL_PORTAL_COORD, Place::School, SCHOOL_FROM_OTTOMAN_COORD, ItemName::OttomanKeyMain,
+                                (OTTOMAN_MAIN_X, OTTOMAN_MAIN_X + OTTOMAN_MAIN_WIDTH), (OTTOMAN_MAIN_Y, OTTOMAN_MAIN_Y + OTTOMAN_MAIN_HEIGHT), ItemName::OttomanKeyMain, TileType::Floor);
 
 
     spawner::build_active_item(&mut gs, ItemName::Book, Place::Library, (19, 19), true);
@@ -276,24 +321,25 @@ fn main() -> rltk::BError {
     spawner::build_dormant_item(&mut gs, ItemName::OttomanKeyMain);
 
     spawner::build_npc(&mut gs, String::from("Taylan Hoca"), Place::Class, (CLASS_X + CLASS_WIDTH - 2, CLASS_Y + 2),
-                       vec!(vec!("Merhaba Onat", "Bugun derste gösterecegim kitaplari kutuphanede unutmusum", "Rica etsem getirebilir misiniz?"),
+                       vec!(vec!("Merhabalar", "Bugun derste gosterecegim kitaplari kutuphanede unutmusum"),
+                            vec!("Rica etsem kitaplari getirebilir misiniz?"),
                             vec!("Super, bir tane daha olmali"),
-                            vec!("Cok tesekkurler", "Sana bu anahtari hediye ediyorum"),
-                            vec!("Iyi gunler")),
+                            vec!("Cok tesekkurler", "Size bu anahtari hediye ediyorum", "Guney Kampus'te biraz gezerseniz bu anahtarin kullnailacagi bir kapi bulacaksiniz"),
+                            vec!("Iyi gunler", "Kapiyi bulmayi unutmayin")),
                        Some(vec!(ItemName::Book, ItemName::Book)),
                        Some(vec!(ItemName::SecretGateKey)),
-                       vec!(0, 1),
-                       vec!(2),
-                       vec!(0, 2));
+                       vec!(1, 2),
+                       vec!(3),
+                       vec!(1, 3));
 
     spawner::build_npc(&mut gs, String::from("Gizemli Karakter"), Place::OttomanMain, (OTTOMAN_MAIN_X + OTTOMAN_MAIN_WIDTH / 2 + 2, OTTOMAN_MAIN_Y + OTTOMAN_MAIN_HEIGHT / 2),
-                       vec!(vec!("Merhabalar gelecekten gelen", "Yuzundeki ifadeden anladigim kadar,yla oldukca sasirmis durumdasın ", "O yuzden aciklamama izin ver:"),
+                       vec!(vec!("Merhabalar gelecekten gelen", "Yuzundeki ifadeden anladigim kadariyla oldukca sasirmis durumdasin ", "O yuzden aciklamama izin ver:"),
                             vec!("Taylan Hoca, tarihi ögrenmek icin bir caba icerisinde olmayanlara iyi bir ders vermek icin onlari gecmise yollar", "Bu sefer de o sanli kisi sensin belli ki"),
                             vec!("Eger kendi zamanina donmek istiyorsan dersini burada, yasayarak ogrenmek zorundasin", "Bu seneki konu Osmanli'da sanat", "Gordugun kapilarin arkasinda, icra ettikleri sanatlari sana anlatacak dort zanaatkar bulunuyor", "Her birini iyice dinle ve isin bitince bana geri don"),
-                            vec!("Iyi dersler"),
-                            vec!("Demek ilk dersi dinledin", "Afferin", "Şimdi ikinci ders"),
-                            vec!("Demek ikinci dersi dinledin", "Afferin", "Şimdi ucuncu ders"),
-                            vec!("Demek ucuncu dersi dinledin", "Afferin", "Şimdi dorduncu ders"),
+                            vec!("Hadi bakalim", "İlk ders ile basla"),
+                            vec!("Demek ilk dersi dinledin", "Afferin", "Simdi ikinci ders"),
+                            vec!("Demek ikinci dersi dinledin", "Afferin", "Simdi ucuncu ders"),
+                            vec!("Demek ucuncu dersi dinledin", "Afferin", "Simdi dorduncu ders"),
                             vec!("Demek dorduncu dersi dinledin", "Afferin", "Artik kendi zamanina donebilirsin"),
                             vec!("Kendine iyi bak")),
                        Some(vec!(ItemName::OttomanReward1, ItemName::OttomanReward2, ItemName::OttomanReward3, ItemName::OttomanReward4)),
@@ -304,7 +350,7 @@ fn main() -> rltk::BError {
 
     spawner::build_npc(&mut gs, String::from("Karakter 1"), Place::OttomanLeft, (OTTOMAN_LEFT_X + OTTOMAN_LEFT_WIDTH / 2, OTTOMAN_LEFT_Y + OTTOMAN_LEFT_HEIGHT / 2),
                        vec!(vec!("Al bakalim dostum"),
-                            vec!("İyi gunler")
+                            vec!("Iyi gunler")
                        ),
                        None,
                        Some(vec!(ItemName::OttomanReward1)),
@@ -314,7 +360,7 @@ fn main() -> rltk::BError {
 
     spawner::build_npc(&mut gs, String::from("Karakter 2"), Place::OttomanTop, (OTTOMAN_TOP_X + OTTOMAN_TOP_WIDTH / 2, OTTOMAN_TOP_Y + OTTOMAN_TOP_HEIGHT / 2),
                        vec!(vec!("Al bakalim dostum"),
-                            vec!("İyi gunler")
+                            vec!("Iyi gunler")
                        ),
                        None,
                        Some(vec!(ItemName::OttomanReward2)),
@@ -324,7 +370,7 @@ fn main() -> rltk::BError {
 
     spawner::build_npc(&mut gs, String::from("Karakter 3"), Place::OttomanRight, (OTTOMAN_RIGHT_X + OTTOMAN_RIGHT_WIDTH / 2, OTTOMAN_RIGHT_Y + OTTOMAN_RIGHT_HEIGHT / 2),
                        vec!(vec!("Al bakalim dostum"),
-                            vec!("İyi gunler")
+                            vec!("Iyi gunler")
                        ),
                        None,
                        Some(vec!(ItemName::OttomanReward3)),
@@ -334,7 +380,7 @@ fn main() -> rltk::BError {
 
     spawner::build_npc(&mut gs, String::from("Karakter 4"), Place::OttomanBottom, (OTTOMAN_BOTTOM_X + OTTOMAN_BOTTOM_WIDTH / 2, OTTOMAN_BOTTOM_Y + OTTOMAN_BOTTOM_HEIGHT / 2),
                        vec!(vec!("Al bakalim dostum"),
-                            vec!("İyi gunler")
+                            vec!("Iyi gunler")
                        ),
                        None,
                        Some(vec!(ItemName::OttomanReward4)),
@@ -351,12 +397,12 @@ fn main() -> rltk::BError {
     gs.ecs.insert(RunState::Game);
     gs.ecs.insert(RunState::Menu { menu_selection: MainMenuSelection::NewGame });
     gs.ecs.insert(Objective {
-        objectives: vec!("Sınıfa git ve Taylan Hoca ile konus".to_string(), "Taylan Hoca'ya kitapları ulastir".to_string(), "Gizli gecidi bul ve arastir".to_string(),
-                         "Ilk dersi dinle".to_string(), "Hediye 1'i gotur".to_string(),
-                         "Ikinci dersi dinle".to_string(), "Hediye 2'i gotur".to_string(),
-                         "Ucuncu dersi dinle".to_string(), "Hediye 3'i gotur".to_string(),
-                         "Dorduncu dersi dinle".to_string(), "Hediye 4'i gotur".to_string(),
-                         "Kendi zamanina don".to_string()),
+        objectives: vec!("Sinifa git ve Taylan Hoca ile konus".to_string(), "Taylan Hoca'nin kitaplarini bul ve derse getir".to_string(), "Gizli gecidi bul ve arastir".to_string(),
+                         "Ilk dersi dinle".to_string(), "Gizemli karakter ile tekrardan konus".to_string(),
+                         "Ikinci dersi dinle".to_string(), "Gizemli karakter ile tekrardan konus".to_string(),
+                         "Ucuncu dersi dinle".to_string(), "Gizemli karakter ile tekrardan konus".to_string(),
+                         "Dorduncu dersi dinle".to_string(), "Gizemli karakter ile tekrardan konus".to_string(),
+                         "Kendi zaman dilimine don".to_string()),
         index: 0,
     });
 

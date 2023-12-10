@@ -23,11 +23,11 @@ pub const CREDIT_3_Y: i32 = CREDIT_2_Y + 4;
 pub const CREDITS_THANKS_Y: i32 = CREDIT_3_Y + 10;
 pub const CREDIT_1_STR: &str = "Aysila Cengiz: Fikri ve destegi icin";
 pub const CREDIT_2_STR: &str = "Herbert Wolverson: Rust ile oyun gelistirmeyi ogrettigi icin";
-pub const CREDIT_3_STR: &str = "Oramakoma Buramako: Tarih uzerine arastirmalari icin";
+pub const CREDIT_3_STR: &str = "-";
 pub const CREDITS_THANKS_STR: &str = "TESEKKURLER";
 // CHARS
 pub const PLAYER_CHAR: char = '☻';
-pub const KEY_CHAR: char = '◙';
+pub const KEY_CHAR: char = '◘';
 pub const PORTAL_CHAR: char = 'Ω';
 pub const NPC_CHAR: char = '☺';
 // OBJECTIVE
@@ -136,7 +136,7 @@ pub const LIBRARY_FROM_SCHOOL_COORD: (i32, i32) = (LIBRARY_TO_SCHOOL_PORTAL_COOR
 pub const OTTOMAN_MAIN_X: i32 = (MAP_WIDTH - OTTOMAN_MAIN_WIDTH) / 2;
 pub const OTTOMAN_MAIN_Y: i32 = (MAP_HEIGHT - OTTOMAN_MAIN_HEIGHT) / 2;
 pub const OTTOMAN_MAIN_WIDTH: i32 = 18;
-pub const OTTOMAN_MAIN_HEIGHT: i32 = 18;
+pub const OTTOMAN_MAIN_HEIGHT: i32 = 19;
 pub const OTTOMAN_TO_SCHOOL_PORTAL_COORD: (i32, i32) = (OTTOMAN_MAIN_X + OTTOMAN_MAIN_WIDTH / 2 - 2, OTTOMAN_MAIN_Y + OTTOMAN_MAIN_HEIGHT / 2);
 pub const OTTOMAN_FROM_SCHOOL_COORD: (i32, i32) = (OTTOMAN_TO_SCHOOL_PORTAL_COORD.0 + 1, OTTOMAN_TO_SCHOOL_PORTAL_COORD.1);
 pub const OTTOMAN_TO_LEFT_PORTAL_COORD: (i32, i32) = (OTTOMAN_MAIN_X - 1, OTTOMAN_MAIN_Y + OTTOMAN_MAIN_HEIGHT / 2);
@@ -175,6 +175,11 @@ pub const OTTOMAN_BOTTOM_WIDTH: i32 = 12;
 pub const OTTOMAN_BOTTOM_HEIGHT: i32 = 12;
 pub const OTTOMAN_BOTTOM_TO_MAIN_PORTAL_COORD: (i32, i32) = (OTTOMAN_BOTTOM_X + OTTOMAN_BOTTOM_WIDTH / 2, OTTOMAN_BOTTOM_Y - 1);
 pub const OTTOMAN_BOTTOM_FROM_MAIN_COORD: (i32, i32) = (OTTOMAN_BOTTOM_TO_MAIN_PORTAL_COORD.0, OTTOMAN_BOTTOM_TO_MAIN_PORTAL_COORD.1 + 1);
+// CONSOLE OUTPUTS
+pub const CONSOLE_ITEM_USED: &str = "Esya kullanildi:";
+pub const CONSOLE_ITEM_NOT_EXIST: &str = "Gerekli esyan yok";
+pub const CONSOLE_ITEM_ACQUIRED: &str = "Esyayi aldin:";
+
 // COLORS
 pub const BACKGROUND_COLOR: RGB = RGB { r: 0., g: 0., b: 0. };
 // COLORS MENU

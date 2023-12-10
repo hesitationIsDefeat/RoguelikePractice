@@ -49,7 +49,8 @@ pub fn save_game(ecs: &mut World) {
         let mut serializer = serde_json::Serializer::new(writer);
         serialize_individually!(ecs, serializer, data, Position, TargetedPosition, Renderable,
             Player, Name, Item, Stored, Impassable, RequiresItem, ContainsItem, RequiresItems, ContainsItems,
-            PermanentItem, SerializationHelper, Portal, BelongsTo, Npc, Objective, Interaction
+            PermanentItem, SerializationHelper, Portal, BelongsTo, Npc, Objective, Interaction, DormantPosition,
+            RevealerInformation, PlayerName
         );
     }
 
@@ -81,7 +82,8 @@ pub fn load_game(ecs: &mut World) {
 
         deserialize_individually!(ecs, de, d, Position, TargetedPosition, Renderable,
             Player, Name, Item, Stored, Impassable, RequiresItem, ContainsItem, RequiresItems, ContainsItems,
-            PermanentItem, SerializationHelper, Portal, BelongsTo, Npc, Objective, Interaction
+            PermanentItem, SerializationHelper, Portal, BelongsTo, Npc, Objective, Interaction, DormantPosition,
+            RevealerInformation, PlayerName
         );
     }
 

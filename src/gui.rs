@@ -1,9 +1,10 @@
 use rltk::{RGB, Rltk, Point, WHITE, BLACK, VirtualKeyCode, RED, GREY, YELLOW};
 use specs::prelude::*;
-use crate::{BelongsTo, ContainsItems, Interaction, Item, Map, Name, Npc, Objective, Place, Portal, Position, Renderable, RequiresItem, RequiresItems, RunState, save_load_system, State, Stored, TargetedPosition};
-use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CREDITS_STR, CURSOR_COLOR, MENU_DELTA_Y, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_COLOR, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_DELTA_Y, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_STRING_COLOR, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, MAP_HEIGHT, MENU_ITEM_1_Y, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NPC_INTERACTION_DIALOGUE_DELTA, NPC_INTERACTION_DIALOGUE_HEADING_X, NPC_INTERACTION_DIALOGUE_HEADING_Y, NPC_INTERACTION_DIALOGUE_X, NPC_INTERACTION_DIALOGUE_Y, NPC_INTERACTION_GLYPH_X, NPC_INTERACTION_SCREEN_BG, NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_GAP_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT, NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y, QUIT_GAME_STR, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y, CREDITS_1_COLOR, CREDIT_1_STR, CREDITS_THANKS_Y, CREDIT_3_Y, CREDIT_2_Y, CREDIT_1_Y, CREDITS_3_COLOR, CREDITS_2_COLOR, CREDITS_THANKS_COLOR, CREDIT_2_STR, CREDIT_3_STR, CREDITS_THANKS_STR, PLACE_DATE_BOX_X, PLACE_DATE_BOX_Y, PLACE_DATE_BOX_WIDTH, PLACE_DATE_BOX_HEIGHT, PLACE_DATE_BOX_FG, PLACE_DATE_BOX_BG, PLACE_DATE_X, PLACE_DATE_Y, PLACE_DATE_COLOR, CONSOLE_LOG_COLOR, OBJECTIVE_BOX_GAP, OBJECTIVE_X, OBJECTIVE_Y, OBJECTIVE_DELTA_Y, OBJECTIVE_BOX_X, OBJECTIVE_BOX_Y, OBJECTIVE_BOX_WIDTH, OBJECTIVE_BOX_HEIGHT, OBJECTIVE_BOX_FG, OBJECTIVE_BOX_BG, PLACE_DATE_BOX_GAP, PLACE_DATE_DELTA_Y, PLACE_DATE_BANNER_X, PLACE_DATE_BANNER, PLACE_DATE_BANNER_COLOR, OBJECTIVE_BANNER_X, OBJECTIVE_BANNER, OBJECTIVE_BANNER_COLOR, INVENTORY_ITEMS_Y};
+use crate::{BelongsTo, ContainsItems, Interaction, Item, Map, Name, Npc, Objective, Place, PlayerName, Portal, Position, Renderable, RequiresItem, RequiresItems, RunState, save_load_system, State, Stored, TargetedPosition};
+use crate::constants::{BACKGROUND_COLOR, CONSOLE_BACKGROUND_COLOR, CONSOLE_BORDER_COLOR, CREDITS_STR, CURSOR_COLOR, MENU_DELTA_Y, INVENTORY_BACKGROUND_COLOR, INVENTORY_BANNER, INVENTORY_BANNER_COLOR, INVENTORY_BANNER_X, INVENTORY_BORDER_COLOR, INVENTORY_DELTA_Y, INVENTORY_HEIGHT, INVENTORY_ITEMS_X, INVENTORY_STRING_COLOR, INVENTORY_WIDTH, INVENTORY_X, INVENTORY_Y, LOAD_GAME_STR, MAP_HEIGHT, MENU_ITEM_1_Y, MENU_SELECTED_COLOR, MENU_UNSELECTED_COLOR, NEW_GAME_STR, NPC_INTERACTION_DIALOGUE_DELTA, NPC_INTERACTION_DIALOGUE_HEADING_X, NPC_INTERACTION_DIALOGUE_HEADING_Y, NPC_INTERACTION_DIALOGUE_X, NPC_INTERACTION_DIALOGUE_Y, NPC_INTERACTION_GLYPH_X, NPC_INTERACTION_SCREEN_BG, NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_GAP_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT, NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y, QUIT_GAME_STR, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE_STR, TITLE_Y, CREDITS_1_COLOR, CREDIT_1_STR, CREDITS_THANKS_Y, CREDIT_3_Y, CREDIT_2_Y, CREDIT_1_Y, CREDITS_3_COLOR, CREDITS_2_COLOR, CREDITS_THANKS_COLOR, CREDIT_2_STR, CREDIT_3_STR, CREDITS_THANKS_STR, PLACE_DATE_BOX_X, PLACE_DATE_BOX_Y, PLACE_DATE_BOX_WIDTH, PLACE_DATE_BOX_HEIGHT, PLACE_DATE_BOX_FG, PLACE_DATE_BOX_BG, PLACE_DATE_X, PLACE_DATE_Y, PLACE_DATE_COLOR, CONSOLE_LOG_COLOR, OBJECTIVE_BOX_GAP, OBJECTIVE_X, OBJECTIVE_Y, OBJECTIVE_DELTA_Y, OBJECTIVE_BOX_X, OBJECTIVE_BOX_Y, OBJECTIVE_BOX_WIDTH, OBJECTIVE_BOX_HEIGHT, OBJECTIVE_BOX_FG, OBJECTIVE_BOX_BG, PLACE_DATE_BOX_GAP, PLACE_DATE_DELTA_Y, PLACE_DATE_BANNER_X, PLACE_DATE_BANNER, PLACE_DATE_BANNER_COLOR, OBJECTIVE_BANNER_X, OBJECTIVE_BANNER, OBJECTIVE_BANNER_COLOR, INVENTORY_ITEMS_Y, CONSOLE_ITEM_ACQUIRED, CONSOLE_ITEM_USED, CONSOLE_ITEM_NOT_EXIST};
 use crate::gamelog::GameLog;
 use crate::items::ItemName;
+use crate::npcs::NpcState;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum ItemMenuResult { Cancel, NoResponse, Selected }
@@ -23,7 +24,7 @@ pub enum MainMenuResult {
 }
 
 #[derive(PartialEq, Copy, Clone)]
-pub enum NpcInteractionResult { NoResponse, Done, NextDialogue }
+pub enum NpcInteractionResult { NoResponse, Done, NextDialogue { index: usize } }
 
 fn print_as_paragraph(ctx: &mut Rltk, line: &str, width: usize, x_coord: i32, y_coord: i32, delta_y: i32) -> i32 {
     let mut y = y_coord;
@@ -270,13 +271,13 @@ pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usi
     ctx.draw_box(NPC_INTERACTION_SCREEN_X, NPC_INTERACTION_SCREEN_Y,
                  NPC_INTERACTION_SCREEN_WIDTH, NPC_INTERACTION_SCREEN_HEIGHT,
                  NPC_INTERACTION_SCREEN_FG, NPC_INTERACTION_SCREEN_BG);
-    let npcs = ecs.read_storage::<Npc>();
     let positions = ecs.read_storage::<Position>();
     let names = ecs.read_storage::<Name>();
     let renderables = ecs.read_storage::<Renderable>();
     let items = ecs.read_storage::<Item>();
     let belongs = ecs.read_storage::<BelongsTo>();
     let current_place = ecs.fetch::<Place>();
+    let mut npcs = ecs.write_storage::<Npc>();
     let mut contains_items = ecs.write_storage::<ContainsItems>();
     let mut log = ecs.write_resource::<GameLog>();
     let mut has_interaction = ecs.write_storage::<Interaction>();
@@ -284,15 +285,92 @@ pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usi
     let mut stored_items = ecs.write_storage::<Stored>();
     let mut requires_items = ecs.write_storage::<RequiresItems>();
     let entities = ecs.entities();
-    for (_npc, interaction, pos, name, rend, cont, req, bel) in (&npcs, &mut has_interaction, &positions, &names, &renderables, &mut contains_items, &mut requires_items, &belongs).join() {
+    for (npc, interaction, pos, name, rend, cont, req, bel) in (&mut npcs, &mut has_interaction, &positions, &names, &renderables, &mut contains_items, &mut requires_items, &belongs).join() {
         if bel.domain == *current_place && pos.x == target.x && pos.y == target.y {
-            let mut increment_dialogue_index = interaction.dialogue_index < interaction.dialogues.len() - 1;
-            println!("Increment dialogue: {}, dialogue_ındex: {}, interaction.dialogue_index: {}", increment_dialogue_index, dialogue_index, interaction.dialogue_index);
-            if dialogue_index >= interaction.dialogues[interaction.dialogue_index].len() {
-                if interaction.give_item_indices.contains(&interaction.dialogue_index) {
-                    if interaction.get_item_indices.contains(&interaction.dialogue_index) {
-                        increment_dialogue_index = false;
+            let mut dialogue_index_returned = dialogue_index + 1;
+            match npc.state {
+                NpcState::HasDialogue => {
+                    let glyph_x = NPC_INTERACTION_GLYPH_X;
+                    let str_x = NPC_INTERACTION_DIALOGUE_X;
+                    let mut y = NPC_INTERACTION_DIALOGUE_Y;
+                    let completed_dialogue = &interaction.dialogues[interaction.dialogue_index][0..=dialogue_index];
+                    ctx.print(NPC_INTERACTION_DIALOGUE_HEADING_X - name.name.len() as i32, NPC_INTERACTION_DIALOGUE_HEADING_Y, &name.name);
+                    for dialogue in completed_dialogue {
+                        ctx.set(glyph_x, y, rend.fg, rend.bg, rend.glyph);
+                        y = print_as_paragraph(ctx, &dialogue, NPC_INTERACTION_SCREEN_GAP_WIDTH as usize,
+                                               str_x, y, NPC_INTERACTION_DIALOGUE_DELTA);
+                        y += NPC_INTERACTION_DIALOGUE_DELTA;
                     }
+                    if interaction.dialogue_index >= interaction.dialogues.len() - 1 {
+                        npc.state = NpcState::Done;
+                    }
+                    if let Some(key) = ctx.key {
+                        if key == VirtualKeyCode::Return {
+                            if dialogue_index >= interaction.dialogues[interaction.dialogue_index].len() - 1 {
+                                dialogue_index_returned = 0;
+                                if interaction.give_item_indices.contains(&interaction.dialogue_index) {
+                                    npc.state = NpcState::WillGiveItem;
+                                } else if interaction.get_item_indices.contains(&interaction.dialogue_index) {
+                                    npc.state = NpcState::WantsItem;
+                                } else {
+                                    interaction.dialogue_index += 1;
+                                }
+                            }
+                            return NpcInteractionResult::NextDialogue { index: dialogue_index_returned };
+                        }
+                    }
+                }
+                NpcState::WantsItem => {
+                    let mut dont_have_the_item = true;
+                    for (item, ent) in (&items, &entities).join() {
+                        if req.items.get(0).unwrap() == &item.name && stored_items.contains(ent) {
+                            let required_item = req.items.remove(0);
+                            let required_item_name = required_item.to_string();
+                            interaction.get_item_indices.remove(0);
+                            stored_items.remove(ent);
+                            log.entries.push(format!("{} {}", CONSOLE_ITEM_USED, required_item_name));
+                            dont_have_the_item = false;
+                            npc.state = NpcState::HasDialogue;
+                            interaction.dialogue_index += 1;
+                            interaction.repeat = false;
+                            break;
+                        }
+                    }
+                    if dont_have_the_item {
+                        if interaction.print_no_item {
+                            log.entries.push(format!("{}", CONSOLE_ITEM_NOT_EXIST));
+                            interaction.print_no_item = false;
+                        }
+                        if interaction.repeat {
+                            let glyph_x = NPC_INTERACTION_GLYPH_X;
+                            let str_x = NPC_INTERACTION_DIALOGUE_X;
+                            let mut y = NPC_INTERACTION_DIALOGUE_Y;
+                            let completed_dialogue = &interaction.dialogues[interaction.dialogue_index][0..=dialogue_index];
+                            ctx.print(NPC_INTERACTION_DIALOGUE_HEADING_X - name.name.len() as i32, NPC_INTERACTION_DIALOGUE_HEADING_Y, &name.name);
+                            for dialogue in completed_dialogue {
+                                ctx.set(glyph_x, y, rend.fg, rend.bg, rend.glyph);
+                                y = print_as_paragraph(ctx, &dialogue, NPC_INTERACTION_SCREEN_GAP_WIDTH as usize,
+                                                       str_x, y, NPC_INTERACTION_DIALOGUE_DELTA);
+                                y += NPC_INTERACTION_DIALOGUE_DELTA;
+                            }
+                            if let Some(key) = ctx.key {
+                                if key == VirtualKeyCode::Return {
+                                    target.x = -1;
+                                    target.y = -1;
+                                    interaction.print_no_item = true;
+                                    return NpcInteractionResult::Done;
+                                }
+                            }
+                        } else {
+                            target.x = -1;
+                            target.y = -1;
+                            interaction.repeat = true;
+                            interaction.print_no_item = true;
+                            return NpcInteractionResult::Done;
+                        }
+                    }
+                }
+                NpcState::WillGiveItem => {
                     let removed_item_name = cont.items.remove(0);
                     interaction.give_item_indices.remove(0);
                     let item_name = removed_item_name.to_string();
@@ -302,54 +380,33 @@ pub fn draw_npc_interaction(ecs: &mut World, ctx: &mut Rltk, dialogue_index: usi
                             break;
                         }
                     }
-                    log.entries.push(format!("Esyayi aldin: {}", item_name))
-                } else if interaction.get_item_indices.contains(&interaction.dialogue_index) {
-                    println!("Enter get_item, index: {}", &interaction.dialogue_index);
-                    let mut dont_have_the_item = true;
-                    for (item, ent) in (&items, &entities).join() {
-                        if req.items.get(0).unwrap() == &item.name && stored_items.contains(ent) {
-                            let required_item = req.items.remove(0);
-                            let required_item_name = required_item.to_string();
-                            interaction.get_item_indices.remove(0);
-                            stored_items.remove(ent);
-                            log.entries.push(format!("Esya kullanildi: {}", required_item_name));
-                            dont_have_the_item = false;
-                            break;
-                        }
-                    }
-                    if dont_have_the_item {
-                        log.entries.push(format!("Gerekli esyan yok"));
-                        increment_dialogue_index = false;
-                    }
-                }
-
-                if interaction.change_objective_indices.contains(&interaction.dialogue_index) {
-                    let mut objective = ecs.fetch_mut::<Objective>();
-                    objective.index += 1;
-                    interaction.change_objective_indices.remove(0);
-                }
-                if increment_dialogue_index {
+                    log.entries.push(format!("{} {}", CONSOLE_ITEM_ACQUIRED, item_name));
+                    npc.state = NpcState::HasDialogue;
                     interaction.dialogue_index += 1;
                 }
-                target.x = -1;
-                target.y = -1;
-                return NpcInteractionResult::Done;
-            }
-            let glyph_x = NPC_INTERACTION_GLYPH_X;
-            let str_x = NPC_INTERACTION_DIALOGUE_X;
-            let mut y = NPC_INTERACTION_DIALOGUE_Y;
-            let completed_dialogue = &interaction.dialogues[interaction.dialogue_index][0..=dialogue_index];
-            ctx.print(NPC_INTERACTION_DIALOGUE_HEADING_X - name.name.len() as i32, NPC_INTERACTION_DIALOGUE_HEADING_Y, &name.name);
-            for dialogue in completed_dialogue {
-                ctx.set(glyph_x, y, rend.fg, rend.bg, rend.glyph);
-                y = print_as_paragraph(ctx, &dialogue, NPC_INTERACTION_SCREEN_GAP_WIDTH as usize,
-                                       str_x, y, NPC_INTERACTION_DIALOGUE_DELTA);
-                y += NPC_INTERACTION_DIALOGUE_DELTA;
-            }
-            if let Some(key) = ctx.key {
-                if key == VirtualKeyCode::Return {
-                    return NpcInteractionResult::NextDialogue;
+                NpcState::Done => {
+                    let glyph_x = NPC_INTERACTION_GLYPH_X;
+                    let str_x = NPC_INTERACTION_DIALOGUE_X;
+                    let mut y = NPC_INTERACTION_DIALOGUE_Y;
+                    let completed_dialogue = &interaction.dialogues[interaction.dialogue_index][0..=dialogue_index];
+                    ctx.print(NPC_INTERACTION_DIALOGUE_HEADING_X - name.name.len() as i32, NPC_INTERACTION_DIALOGUE_HEADING_Y, &name.name);
+                    for dialogue in completed_dialogue {
+                        ctx.set(glyph_x, y, rend.fg, rend.bg, rend.glyph);
+                        y = print_as_paragraph(ctx, &dialogue, NPC_INTERACTION_SCREEN_GAP_WIDTH as usize,
+                                               str_x, y, NPC_INTERACTION_DIALOGUE_DELTA);
+                        y += NPC_INTERACTION_DIALOGUE_DELTA;
+                    }
+                    if let Some(key) = ctx.key {
+                        if key == VirtualKeyCode::Return {
+                            return NpcInteractionResult::Done;
+                        }
+                    }
                 }
+            }
+            if interaction.change_objective_indices.contains(&interaction.dialogue_index) {
+                let mut objective = ecs.fetch_mut::<Objective>();
+                objective.index += 1;
+                interaction.change_objective_indices.remove(0);
             }
             break;
         }
@@ -362,6 +419,94 @@ pub fn draw_credits(ctx: &mut Rltk) {
     ctx.print_color_centered(CREDIT_2_Y, CREDITS_2_COLOR, BACKGROUND_COLOR, CREDIT_2_STR);
     ctx.print_color_centered(CREDIT_3_Y, CREDITS_3_COLOR, BACKGROUND_COLOR, CREDIT_3_STR);
     ctx.print_color_centered(CREDITS_THANKS_Y, CREDITS_THANKS_COLOR, BACKGROUND_COLOR, CREDITS_THANKS_STR);
+}
+
+fn keycode_to_char(key: Option<VirtualKeyCode>) -> Option<char> {
+    if let Some(keycode) = key {
+        match keycode {
+            VirtualKeyCode::A
+            | VirtualKeyCode::B
+            | VirtualKeyCode::C
+            | VirtualKeyCode::D
+            | VirtualKeyCode::E
+            | VirtualKeyCode::F
+            | VirtualKeyCode::G
+            | VirtualKeyCode::H
+            | VirtualKeyCode::I
+            | VirtualKeyCode::J
+            | VirtualKeyCode::K
+            | VirtualKeyCode::L
+            | VirtualKeyCode::M
+            | VirtualKeyCode::N
+            | VirtualKeyCode::O
+            | VirtualKeyCode::P
+            | VirtualKeyCode::Q
+            | VirtualKeyCode::R
+            | VirtualKeyCode::S
+            | VirtualKeyCode::T
+            | VirtualKeyCode::U
+            | VirtualKeyCode::V
+            | VirtualKeyCode::W
+            | VirtualKeyCode::X
+            | VirtualKeyCode::Y
+            | VirtualKeyCode::Z => {
+                let key_char = (keycode as u8 - VirtualKeyCode::A as u8 + b'A') as char;
+                return Some(key_char);
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+pub fn draw_enter_name(ecs: &mut World, ctx: &mut Rltk) -> bool {
+    ctx.print_centered(SCREEN_HEIGHT / 2 - 5, "ISMINIZI GIRIN:");
+    let mut player_name = ecs.fetch_mut::<PlayerName>();
+    match ctx.key {
+        Some(VirtualKeyCode::A)
+        | Some(VirtualKeyCode::B)
+        | Some(VirtualKeyCode::C)
+        | Some(VirtualKeyCode::D)
+        | Some(VirtualKeyCode::E)
+        | Some(VirtualKeyCode::F)
+        | Some(VirtualKeyCode::G)
+        | Some(VirtualKeyCode::H)
+        | Some(VirtualKeyCode::I)
+        | Some(VirtualKeyCode::J)
+        | Some(VirtualKeyCode::K)
+        | Some(VirtualKeyCode::L)
+        | Some(VirtualKeyCode::M)
+        | Some(VirtualKeyCode::N)
+        | Some(VirtualKeyCode::O)
+        | Some(VirtualKeyCode::P)
+        | Some(VirtualKeyCode::Q)
+        | Some(VirtualKeyCode::R)
+        | Some(VirtualKeyCode::S)
+        | Some(VirtualKeyCode::T)
+        | Some(VirtualKeyCode::U)
+        | Some(VirtualKeyCode::V)
+        | Some(VirtualKeyCode::W)
+        | Some(VirtualKeyCode::X)
+        | Some(VirtualKeyCode::Y)
+        | Some(VirtualKeyCode::Z) => {
+            if let Some(char) = keycode_to_char(ctx.key) {
+                player_name.name.push(char);
+            }
+        }
+        Some(VirtualKeyCode::Return) => {
+            return true;
+        }
+        Some(VirtualKeyCode::Delete) => {
+            player_name.name.pop();
+        }
+        _ => {}
+    }
+    ctx.print_color_centered_at(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, MENU_SELECTED_COLOR, BACKGROUND_COLOR, &player_name.name);
+    false
+}
+
+pub fn draw_game_over(ctx: &mut Rltk) {
+    ctx.print_color_centered(SCREEN_HEIGHT / 2, MENU_SELECTED_COLOR, BACKGROUND_COLOR, "OYUNU KAZANDIN");
 }
 
 
