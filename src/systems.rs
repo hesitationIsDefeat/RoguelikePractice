@@ -1,8 +1,9 @@
 use rltk::Point;
 use specs::{Entities, Join, Read, ReadExpect, ReadStorage, System, WriteExpect, WriteStorage};
 use crate::{BelongsTo, DormantPosition, Item, Map, Name, Npc, Place, Portal, Position, Renderable, RequiresItem, RevealerInformation, RunState, Stored, TargetedPosition, TileType};
-use crate::constants::ITEM_PORTAL_COLOR;
+use crate::constants::{ITEM_PORTAL_COLOR, OTTOMAN_COMBINED_REWARD_MOSQUE_MODEL_NAME, OTTOMAN_COMBINED_REWARD_POEM_BOOK_NAME};
 use crate::gamelog::GameLog;
+use crate::items::ItemName;
 
 pub struct ItemAdjustmentSystem {}
 
@@ -134,6 +135,97 @@ impl<'a> System<'a> for GameStateAdjustmentSystem {
                     *state = RunState::InteractNpc { index: 0 };
                 }
             }
+        }
+    }
+}
+
+pub struct ItemCombinationSystem {}
+
+impl<'a> System<'a> for ItemCombinationSystem {
+    type SystemData = (WriteStorage<'a, Stored>,
+                       ReadStorage<'a, Item>,
+                       Entities<'a>,
+                       WriteExpect<'a, GameLog>);
+
+    fn run(&mut self, data: Self::SystemData) {
+        let (
+            mut stored_items,
+            items,
+            entities,
+            mut log
+        ) = data;
+
+        let mut contains_poem_piece = false;
+        let mut contains_book_cover = false;
+        let mut contains_glue = false;
+
+        let mut contains_mosque_1 = false;
+        let mut contains_mosque_2 = false;
+
+        let mut contains_note_paper = false;
+        let mut contains_canvas = false;
+        let mut contains_clay = false;
+        for (item, _stored_item) in (&items, &stored_items).join() {
+            match item.name {
+                ItemName::OttomanRewardPoem => contains_poem_piece = true,
+                ItemName::OttomanRewardBookCover => contains_book_cover = true,
+                ItemName::OttomanRewardGlue => contains_glue = true,
+                ItemName::OttomanRewardMosquePart1 => contains_mosque_1 = true,
+                ItemName::OttomanRewardMosquePart2 => contains_mosque_2 = true,
+                ItemName::OttomanRewardNotePaper => contains_note_paper = true,
+                ItemName::OttomanRewardCanvas => contains_canvas = true,
+                ItemName::OttomanRewardClay => contains_clay = true,
+                _ => {}
+            }
+        }
+        if contains_poem_piece && contains_book_cover && contains_glue {
+            for (item, ent) in (&items, &entities).join() {
+                if item.name == ItemName::OttomanRewardPoem || item.name == ItemName::OttomanRewardBookCover || item.name == ItemName::OttomanRewardGlue {
+                    stored_items.remove(ent);
+                }
+            }
+            for (item, ent) in (&items, &entities).join() {
+                if item.name == ItemName::OttomanCombinedRewardPoemBook {
+                    stored_items.insert(ent, Stored {}).expect("Couldn't insert sorted");
+                    log.entries.push(format!("Yeni Esya Urettin: {}", OTTOMAN_COMBINED_REWARD_POEM_BOOK_NAME))
+                }
+            }
+            contains_book_cover = false;
+            contains_poem_piece = false;
+            contains_glue = false;
+        }
+
+        if contains_mosque_1 && contains_mosque_2 {
+            for (item, ent) in (&items, &entities).join() {
+                if item.name == ItemName::OttomanRewardMosquePart1 || item.name == ItemName::OttomanRewardMosquePart2 {
+                    stored_items.remove(ent);
+                }
+            }
+            for (item, ent) in (&items, &entities).join() {
+                if item.name == ItemName::OttomanCombinedRewardMosqueModel {
+                    stored_items.insert(ent, Stored {}).expect("Couldn't insert sorted");
+                    log.entries.push(format!("Yeni Esya Urettin: {}", OTTOMAN_COMBINED_REWARD_MOSQUE_MODEL_NAME))
+                }
+            }
+            contains_mosque_1 = false;
+            contains_mosque_2 = false;
+        }
+
+        if contains_note_paper && contains_canvas && contains_clay {
+            for (item, ent) in (&items, &entities).join() {
+                if item.name == ItemName::OttomanRewardNotePaper || item.name == ItemName::OttomanRewardCanvas || item.name == ItemName::OttomanRewardClay {
+                    stored_items.remove(ent);
+                }
+            }
+            for (item, ent) in (&items, &entities).join() {
+                if item.name == ItemName::OttomanCombinedRewardWeirdCollage {
+                    stored_items.insert(ent, Stored {}).expect("Couldn't insert sorted");
+                    log.entries.push(format!("Yeni Esya Urettin: {}", OTTOMAN_COMBINED_REWARD_MOSQUE_MODEL_NAME))
+                }
+            }
+            contains_note_paper = false;
+            contains_canvas = false;
+            contains_clay = false;
         }
     }
 }

@@ -1,7 +1,7 @@
 use rltk::Rltk;
 use serde::{Deserialize, Serialize};
 use specs::{Join, World, WorldExt};
-use crate::constants::{BACKGROUND_COLOR, CLASS_HEIGHT, CLASS_WIDTH, CLASS_X, CLASS_Y, CURRENT_DATE, HOME_HEIGHT, HOME_WIDTH, HOME_X, HOME_Y, LIBRARY_HEIGHT, LIBRARY_WIDTH, LIBRARY_X, LIBRARY_Y, MAP_HEIGHT, MAP_TILES, MAP_WIDTH, OTTOMAN_BOTTOM_HEIGHT, OTTOMAN_BOTTOM_WIDTH, OTTOMAN_BOTTOM_X, OTTOMAN_BOTTOM_Y, OTTOMAN_LEFT_HEIGHT, OTTOMAN_LEFT_WIDTH, OTTOMAN_LEFT_X, OTTOMAN_LEFT_Y, OTTOMAN_MAIN_HEIGHT, OTTOMAN_MAIN_WIDTH, OTTOMAN_MAIN_X, OTTOMAN_MAIN_Y, OTTOMAN_RIGHT_HEIGHT, OTTOMAN_RIGHT_WIDTH, OTTOMAN_RIGHT_X, OTTOMAN_RIGHT_Y, OTTOMAN_TOP_HEIGHT, OTTOMAN_TOP_WIDTH, OTTOMAN_TOP_X, OTTOMAN_TOP_Y, PAST_DATE, PLACE_CLASS_NAME, PLACE_HOME_NAME, PLACE_LIB_NAME, PLACE_OTTOMAN_BOTTOM_NAME, PLACE_OTTOMAN_LEFT_NAME, PLACE_OTTOMAN_MAIN_NAME, PLACE_OTTOMAN_RIGHT_NAME, PLACE_OTTOMAN_TOP_NAME, PLACE_SCHOOL_NAME, SCHOOL_HEIGHT, SCHOOL_WIDTH, SCHOOL_X, SCHOOL_Y, SPACE_COLOR, TILE_COLOR, WALL_COLOR};
+use crate::constants::{BACKGROUND_COLOR, CLASS_HEIGHT, CLASS_WIDTH, CLASS_X, CLASS_Y, CURRENT_DATE, HOME_HEIGHT, HOME_WIDTH, HOME_X, HOME_Y, LIBRARY_HEIGHT, LIBRARY_WIDTH, LIBRARY_X, LIBRARY_Y, MAP_HEIGHT, MAP_TILES, MAP_WIDTH, OTTOMAN_BOTTOM_HEIGHT, OTTOMAN_BOTTOM_WIDTH, OTTOMAN_BOTTOM_X, OTTOMAN_BOTTOM_Y, OTTOMAN_LEFT_HEIGHT, OTTOMAN_LEFT_WIDTH, OTTOMAN_LEFT_X, OTTOMAN_LEFT_Y, OTTOMAN_MAIN_HEIGHT, OTTOMAN_MAIN_WIDTH, OTTOMAN_MAIN_X, OTTOMAN_MAIN_Y, OTTOMAN_RIGHT_HEIGHT, OTTOMAN_RIGHT_WIDTH, OTTOMAN_RIGHT_X, OTTOMAN_RIGHT_Y, OTTOMAN_TOP_HEIGHT, OTTOMAN_TOP_WIDTH, OTTOMAN_TOP_X, OTTOMAN_TOP_Y, PAST_DATE, PLACE_CLASS_NAME, PLACE_HOME_NAME, PLACE_LIB_NAME, PLACE_OTTOMAN_LEFT_NAME, PLACE_OTTOMAN_MAIN_NAME, PLACE_OTTOMAN_RIGHT_NAME, PLACE_OTTOMAN_TOP_NAME, PLACE_SCHOOL_NORTH_NAME, PLACE_SCHOOL_SOUTH_NAME, SCHOOL_NORTH_HEIGHT, SCHOOL_NORTH_WIDTH, SCHOOL_NORTH_X, SCHOOL_NORTH_Y, SCHOOL_SOUTH_HEIGHT, SCHOOL_SOUTH_WIDTH, SCHOOL_SOUTH_X, SCHOOL_SOUTH_Y, SPACE_COLOR, TILE_COLOR, WALL_COLOR};
 use super::{BelongsTo, Npc, Portal, Position, Rect, RequiresItem};
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
@@ -17,34 +17,34 @@ pub enum TileType {
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
 pub enum Place {
     Home,
-    School,
+    SchoolSouth,
+    SchoolNorth,
     Class,
     Library,
     OttomanMain,
     OttomanLeft,
     OttomanRight,
     OttomanTop,
-    OttomanBottom,
 }
 
 impl Place {
     pub fn get_name(&self) -> String {
         String::from(match self {
             Place::Home => PLACE_HOME_NAME,
-            Place::School => PLACE_SCHOOL_NAME,
+            Place::SchoolSouth => PLACE_SCHOOL_SOUTH_NAME,
+            Place::SchoolNorth => PLACE_SCHOOL_NORTH_NAME,
             Place::Class => PLACE_CLASS_NAME,
             Place::Library => PLACE_LIB_NAME,
             Place::OttomanMain => PLACE_OTTOMAN_MAIN_NAME,
             Place::OttomanLeft => PLACE_OTTOMAN_LEFT_NAME,
             Place::OttomanRight => PLACE_OTTOMAN_RIGHT_NAME,
             Place::OttomanTop => PLACE_OTTOMAN_TOP_NAME,
-            Place::OttomanBottom => PLACE_OTTOMAN_BOTTOM_NAME
         })
     }
     pub fn get_year(&self) -> String {
         String::from(match self {
-            Place::School | Place::Home | Place::Class | Place::Library => CURRENT_DATE,
-            Place::OttomanMain | Place::OttomanLeft | Place::OttomanRight | Place::OttomanTop | Place::OttomanBottom => PAST_DATE,
+            Place::SchoolSouth | Place::SchoolNorth | Place::Home | Place::Class | Place::Library => CURRENT_DATE,
+            Place::OttomanMain | Place::OttomanLeft | Place::OttomanRight | Place::OttomanTop => PAST_DATE,
         })
     }
 }
@@ -114,14 +114,14 @@ impl Map {
         };
         let created_place: Rect = match place {
             Place::Home => Rect::new(HOME_X, HOME_Y, HOME_WIDTH, HOME_HEIGHT),
-            Place::School => Rect::new(SCHOOL_X, SCHOOL_Y, SCHOOL_WIDTH, SCHOOL_HEIGHT),
+            Place::SchoolSouth => Rect::new(SCHOOL_SOUTH_X, SCHOOL_SOUTH_Y, SCHOOL_SOUTH_WIDTH, SCHOOL_SOUTH_HEIGHT),
+            Place::SchoolNorth => Rect::new(SCHOOL_NORTH_X, SCHOOL_NORTH_Y, SCHOOL_NORTH_WIDTH, SCHOOL_NORTH_HEIGHT),
             Place::Class => Rect::new(CLASS_X, CLASS_Y, CLASS_WIDTH, CLASS_HEIGHT),
             Place::Library => Rect::new(LIBRARY_X, LIBRARY_Y, LIBRARY_WIDTH, LIBRARY_HEIGHT),
             Place::OttomanMain => Rect::new(OTTOMAN_MAIN_X, OTTOMAN_MAIN_Y, OTTOMAN_MAIN_WIDTH, OTTOMAN_MAIN_HEIGHT),
             Place::OttomanLeft => Rect::new(OTTOMAN_LEFT_X, OTTOMAN_LEFT_Y, OTTOMAN_LEFT_WIDTH, OTTOMAN_LEFT_HEIGHT),
             Place::OttomanRight => Rect::new(OTTOMAN_RIGHT_X, OTTOMAN_RIGHT_Y, OTTOMAN_RIGHT_WIDTH, OTTOMAN_RIGHT_HEIGHT),
             Place::OttomanTop => Rect::new(OTTOMAN_TOP_X, OTTOMAN_TOP_Y, OTTOMAN_TOP_WIDTH, OTTOMAN_TOP_HEIGHT),
-            Place::OttomanBottom => Rect::new(OTTOMAN_BOTTOM_X, OTTOMAN_BOTTOM_Y, OTTOMAN_BOTTOM_WIDTH, OTTOMAN_BOTTOM_HEIGHT),
         };
         map.apply_room_to_map(&created_place);
 
