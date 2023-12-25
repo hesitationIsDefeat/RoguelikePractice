@@ -238,7 +238,7 @@ impl GameState for State {
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
     let context = RltkBuilder::simple80x50()
-        .with_title("Roguelike Tutorial")
+        .with_title("Tarih Oyunu")
         .with_tile_dimensions(12, 12)
         .build()?;
     let mut gs = State { ecs: World::new() };
@@ -291,13 +291,13 @@ fn main() -> rltk::BError {
                                 (SCHOOL_SOUTH_TO_OTTOMAN_PORTAL_COORD.0 - 2, SCHOOL_SOUTH_TO_OTTOMAN_PORTAL_COORD.0 + 2), (SCHOOL_SOUTH_TO_OTTOMAN_PORTAL_COORD.1, SCHOOL_SOUTH_TO_OTTOMAN_PORTAL_COORD.1 + 2),
                                 ItemName::SecretGateKey, TileType::Wall);
 
-    spawner::build_door(&mut gs, String::from("Kapi 1"), Place::OttomanMain, OTTOMAN_TO_LEFT_PORTAL_COORD, Place::OttomanLeft, OTTOMAN_LEFT_FROM_MAIN_COORD, ItemName::OttomanKey1);
+    spawner::build_door(&mut gs, String::from("Bati Cikisi"), Place::OttomanMain, OTTOMAN_TO_LEFT_PORTAL_COORD, Place::OttomanLeft, OTTOMAN_LEFT_FROM_MAIN_COORD, ItemName::OttomanKey1);
     spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanLeft, OTTOMAN_LEFT_TO_MAIN_PORTAL_COORD, Place::OttomanMain, OTTOMAN_FROM_LEFT_COORD);
 
-    spawner::build_door(&mut gs, String::from("Kapi 2"), Place::OttomanMain, OTTOMAN_TO_TOP_PORTAL_COORD, Place::OttomanTop, OTTOMAN_TOP_FROM_MAIN_COORD, ItemName::OttomanKey2);
+    spawner::build_door(&mut gs, String::from("Kuzey Cikisi"), Place::OttomanMain, OTTOMAN_TO_TOP_PORTAL_COORD, Place::OttomanTop, OTTOMAN_TOP_FROM_MAIN_COORD, ItemName::OttomanKey2);
     spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanTop, OTTOMAN_TOP_TO_MAIN_PORTAL_COORD, Place::OttomanMain, OTTOMAN_FROM_TOP_COORD);
 
-    spawner::build_door(&mut gs, String::from("Kapi 3"), Place::OttomanMain, OTTOMAN_TO_RIGHT_PORTAL_COORD, Place::OttomanRight, OTTOMAN_RIGHT_FROM_MAIN_COORD, ItemName::OttomanKey3);
+    spawner::build_door(&mut gs, String::from("Dogu Cikisi"), Place::OttomanMain, OTTOMAN_TO_RIGHT_PORTAL_COORD, Place::OttomanRight, OTTOMAN_RIGHT_FROM_MAIN_COORD, ItemName::OttomanKey3);
     spawner::build_portal(&mut gs, String::from("Meydan Kapisi"), Place::OttomanRight, OTTOMAN_RIGHT_TO_MAIN_PORTAL_COORD, Place::OttomanMain, OTTOMAN_FROM_RIGHT_COORD);
 
     spawner::build_dormant_door(&mut gs, String::from("Zaman Kapisi"), Place::OttomanMain, OTTOMAN_TO_SCHOOL_PORTAL_COORD, Place::SchoolSouth, SCHOOL_SOUTH_FROM_OTTOMAN_COORD, ItemName::OttomanKeyMain,
@@ -329,12 +329,12 @@ fn main() -> rltk::BError {
     spawner::build_dormant_item(&mut gs, ItemName::OttomanKeyMain);
 
     spawner::build_npc_human(&mut gs, "Taylan Hoca", Place::Class, (CLASS_X + CLASS_WIDTH - 2, CLASS_Y + 2),
-                             vec!(vec!("Merhabalar", "Bugun derste gosterecegim kitaplari kutuphanede unutmusum"),
+                             vec!(vec!("Merhabalar.", "Bugun derste gosterecegim kitaplari kutuphanede unutmusum."),
                                   vec!("Rica etsem kitaplari getirebilir misiniz?"),
-                                  vec!("Super, iki tane daha olmali"),
-                                  vec!("Cok tesekkurler", "Sonuncuyu da alabilir miyim?"),
-                                  vec!("Demek sizde degil", "O zaman size bu anahtari veriyorum", "Guney Kampus'te biraz gezerseniz bu anahtarin kullnailacagi bir kapi bulacaksiniz ve kitabim de o kapinin ardinda"),
-                                  vec!("Iyi gunler", "Kitabi bulmayi unutmayin")),
+                                  vec!("Super, iki tane daha olmali."),
+                                  vec!("Cok tesekkurler!", "Sonuncuyu da alabilir miyim?"),
+                                  vec!("Demek sizde degil...", "O zaman size bu anahtari veriyorum.", "Guney Kampus'te biraz gezerseniz bu anahtarin kullnailacagi bir kapi bulacaksiniz ve kitabim de o kapinin ardinda."),
+                                  vec!("Iyi gunler, kitabi bulmayi unutmayin.")),
                              Some(vec!(ItemName::Book, ItemName::Book)),
                              Some(vec!(ItemName::SecretGateKey)),
                              vec!(1, 2),
@@ -342,18 +342,18 @@ fn main() -> rltk::BError {
                              vec!(1, 4));
 
     spawner::build_npc_human(&mut gs, "Gizemli Karakter", Place::OttomanMain, (OTTOMAN_MAIN_X + OTTOMAN_MAIN_WIDTH / 2 + 2, OTTOMAN_MAIN_Y + OTTOMAN_MAIN_HEIGHT / 2),
-                             vec!(vec!("Merhabalar gelecekten gelen", "Yuzundeki ifadeden anladigim kadariyla oldukca sasirmis durumdasin ", "O yuzden aciklamama izin ver:"),
-                                  vec!("Taylan Hoca, tarihi ogrenmek icin bir caba icerisinde olmayanlara iyi bir ders vermek icin onlari gecmise yollar", "Bu sefer de o sansli kisi sensin belli ki"),
-                                  vec!("Eger kendi zamanina donmek istiyorsan dersini burada, yasayarak ogrenmek zorundasin", "Bu seneki konu Osmanli'da sanat", "Gordugun kapilarin arkasinda, konu hakkinda seni ilgilendirecek insanlar bulunuyor", "Her birini iyice dinle ve isin bitince bana geri don"),
-                                  vec!("Hadi bakalim", "Ilk ders ile basla"),
-                                  vec!("Demek ilk dersi dinledin", "Afferin"),
-                                  vec!("Simdi sirada ikinci ders var"),
-                                  vec!("Dersi dinle ve bana geri don"),
-                                  vec!("Demek ikinci dersi dinledin", "Afferin"),
-                                  vec!("Simdi ucuncu ders"),
-                                  vec!("Dersi dinle ve bana geri don"),
-                                  vec!("Demek ucuncu dersi dinledin", "Afferin", "Artik kendi zamanina donebilirsin"),
-                                  vec!("Kendine iyi bak")),
+                             vec!(vec!("Merhabalar gelecekten gelen!", "Yuzundeki ifadeden anladigim kadariyla oldukca sasirmis durumdasin.", "O yuzden aciklamama izin ver:"),
+                                  vec!("Taylan Hoca, tarihi ogrenmek icin bir caba icerisinde olmayanlara iyi bir ders vermek icin onlari gecmise yollar.", "Bu sefer de o sansli kisi sensin belli ki."),
+                                  vec!("Eger kendi zamanina donmek istiyorsan dersini burada, yasayarak ogrenmek zorundasin!", "Bu seneki konu Osmanli'nin son dönemlerinde sanat alininda yasadigi degisimler.", "Gordugun kapilarin arkasinda, konu hakkinda seni ilgilendirecek insanlar bulunuyor.", "Her birini iyice dinle ve isin bitince bana geri don."),
+                                  vec!("Hadi bakalim!", "Ilk ders ile basla."),
+                                  vec!("Demek ilk dersi dinledin.", "Afferin!"),
+                                  vec!("Simdi sirada ikinci ders var."),
+                                  vec!("Dersi dinle ve bana geri don!"),
+                                  vec!("Demek ikinci dersi dinledin.", "Afferin!"),
+                                  vec!("Simdi ucuncu ders var."),
+                                  vec!("Dersi dinle ve bana geri don!"),
+                                  vec!("Demek ucuncu dersi dinledin.", "Afferin!", "Artik kendi zamanina donebilirsin!"),
+                                  vec!("Kendine iyi bak.")),
                              Some(vec!(ItemName::OttomanCombinedRewardPoemBook, ItemName::OttomanCombinedRewardMosqueModel, ItemName::OttomanCombinedRewardWeirdCollage)),
                              Some(vec!(ItemName::OttomanKey1, ItemName::OttomanKey2, ItemName::OttomanKey3, ItemName::OttomanKeyMain)),
                              vec!(3, 6, 9),
@@ -389,7 +389,7 @@ fn main() -> rltk::BError {
                              vec!(vec!("Devletimizin Bati karsisinda surekli guc kaybettigi donemlerde, aydinlarimiz edebiyati halki yasadigi bunalimdan biraz da olsa kurtarabilmek adina kullanmislardir. Bu sebepten dolayi son donem edebiyatimizda sosyal, siyasal, kulturel problemlere atiflara oldukca rastlanir. Son donem yazarlarimizdan Munif Paşa, Ahmet Mithat Efendi, Sadullah Paşa gibi isimler donemin fikir hareketlerinden etkilenerek bu fikirleri eserlerine yansitmislardir. Batidan bizim topraklarimiza ulasan rasyonalist akim da bu fikir akimlarindan biridir."),
                                   vec!("Tercume-i Telemak cevirisi, direkt olarak bati dusuncesine dayanan bir kitaptir mesela.Namik Kemal icin cok degerli olarak gorulmesi ve Sinasi tarafindan ikinci baskisinin cevrilmesi, son donem edebiyatcilarimizin rasyonalizm ve realizmin etkisi altinda kaldigini gosterir. Baska bir ornek ise, Mumif Pasa’nin Mecmua-i Funun’da arka arkaya yayinladigi makaleler icerisinde batiya ait calismalardan faydalanilmasi ve bazi calismalarin dogrudan cevirilmesidir."),
                                   vec!("Belirtmek istedigim baska bir durum ise, Fransiz aydinlanmasinda buyuk rol oynayan Montesqieu, Voltaire, Jean Jack Rousseau ve Diderot’un akla dayali ansiklopedik bilgiyi edebiyatlari ile birlestirme endiselerini; 1839-1896 yillari arasinda eser ureten edebiyatcilarimizin cogunda da gorebilmekteyiz."),
-                                  vec!("İyi gunler dilerim.")
+                                  vec!("Iyi gunler dilerim.")
                              ),
                              None,
                              Some(vec!(ItemName::OttomanRewardGlue)),
@@ -428,7 +428,7 @@ fn main() -> rltk::BError {
                              vec!(4));
 
 
-    spawner::build_npc_human(&mut gs, "Ahmet Bey", Place::OttomanRight, (OTTOMAN_RIGHT_X + OTTOMAN_RIGHT_WIDTH / 2 + 1, OTTOMAN_RIGHT_Y + OTTOMAN_RIGHT_HEIGHT / 2),
+    spawner::build_npc_human(&mut gs, "Ahmet Bey", Place::OttomanRight, (OTTOMAN_RIGHT_X + OTTOMAN_RIGHT_WIDTH / 2 + 2, OTTOMAN_RIGHT_Y + OTTOMAN_RIGHT_HEIGHT / 2),
                              vec!(vec!("Klasik bati muzigine olan hayranligin artmasi sonucu, Osmanli muzigi bir baskalasim gecirmistir. Bunun arkasindaki en onemli etkenlerden biri de yabanci muzik ustatlarinin Osmanli’da verdigi konserlerdir. Buna ornek olarak Franz Lizst’in Istanbul’da verdigi konserler verilebilir. Biraz enteresan gelebilir ancak o donemlerde Avrupa’da da Turk muziginden alintilar gormek mumkundur. Mozart ve Beethoven’in kullanmis olduklari ritimler ve melodiler mehter muziginin ozelliklerini bunyesinde barindirmaktadirlar."),
                                   vec!("Padisahlara eserler hediye edilmesi de sikca gozlenen bir durumdur ve Avrupa muzigi ile kurulan bu yakinlik, bati muzigine olan ilgiyi arttirmis ve iki muzik kulturune de katkilarda bulunmustur."),
                                   vec!("Hayirli gunler.")
@@ -449,7 +449,7 @@ fn main() -> rltk::BError {
                              vec!(),
                              vec!(2),
                              vec!(2));
-    spawner::build_npc_human(&mut gs, "Almila Hanim", Place::OttomanRight, (OTTOMAN_RIGHT_X + OTTOMAN_RIGHT_WIDTH / 2, OTTOMAN_RIGHT_Y + OTTOMAN_RIGHT_HEIGHT / 2 + 1),
+    spawner::build_npc_human(&mut gs, "Almila Hanim", Place::OttomanRight, (OTTOMAN_RIGHT_X + OTTOMAN_RIGHT_WIDTH / 2 + 1, OTTOMAN_RIGHT_Y + OTTOMAN_RIGHT_HEIGHT / 2 + 1),
                              vec!(vec!("Heykel uretimi Osmanli topraklarina 19.yuzyilin sonlarina dogru varmistir. Bunun en buyuk sebebi, toplumun geleneksel degerlerinden uzaklasmak istememesidir. 1871 yilinda, Sultan Abdulaziz’in Avrupa kentlerine yapmis oldugu gezi donusunde kendi heykelini yaptirmistir ve bu olay heykel sanatinin kesin olarak Osmanli sanatinin bir parcasi haline gelmesini saglamistir. 1883 yilinda Sanayi-i Nefise Mekteb-i Alisi’nin acilmasinin ardindan Osmanli’da heykeltiras yetistirecek bir okul ilk kez acilmis olur."),
                                   vec!("Simdi izninle Yervant Osgan Efendi’yi yad etmek istiyorum. Kendisi Avrupa’da heykel uzerine ogrenim goren ilk Osmanli genci olmasi ile bilinir. Sanayi-i Nefise’de 32 yil boyunca ogretim uyesi olarak calisir, bircok sanatcinin yetismesinde rol oynar. Ayni zamanda kendisi de gercekci yorumlarini kattigi bir suru heykel uretmistir."),
                                   vec!("Gorusmek uzere.")
@@ -461,12 +461,14 @@ fn main() -> rltk::BError {
                              vec!(1));
 
 
-    spawner::build_npc_human_one_liner(&mut gs, "Aysila", Place::SchoolSouth, (17, 14), "Merhaba");
-    spawner::build_npc_dog(&mut gs, "Karbeyaz", Place::SchoolNorth, (20, 13), RGB::from_u8(10, 10, 10), "HAV HAV");
-    spawner::build_npc_dog(&mut gs, "Naci", Place::SchoolNorth, (20, 15), RGB::from_u8(230, 230, 132), "Hav");
-    spawner::build_npc_dog(&mut gs, "Pasa", Place::SchoolNorth, (20, 17), RGB::from_u8(30, 30, 30), "Hav Hav");
-    spawner::build_npc_cat(&mut gs, "Adolf", Place::SchoolNorth, (25, 15), RGB::from_u8(229, 229, 201), "Mrrnav");
-    spawner::build_npc_cat(&mut gs, "Deli", Place::SchoolNorth, (25, 13), RGB::from_u8(228, 228, 49), "Miav");
+    spawner::build_npc_human_one_liner(&mut gs, "Efe", Place::SchoolSouth, (17, 14), "Merhaba.");
+    spawner::build_npc_human_one_liner(&mut gs, "Aysila", Place::SchoolSouth, (32, 23), "Selamlar!");
+
+    spawner::build_npc_dog(&mut gs, "Karbeyaz", Place::SchoolNorth, (31, 22), RGB::from_u8(10, 10, 10), "HAV HAV");
+    spawner::build_npc_dog(&mut gs, "Naci", Place::SchoolNorth, (17, 15), RGB::from_u8(230, 230, 132), "Hav");
+    spawner::build_npc_dog(&mut gs, "Pasa", Place::SchoolNorth, (16, 22), RGB::from_u8(30, 30, 30), "Hav Hav");
+    spawner::build_npc_cat(&mut gs, "Adolf", Place::SchoolNorth, (31, 25), RGB::from_u8(229, 229, 201), "Mrrnav");
+    spawner::build_npc_cat(&mut gs, "Deli", Place::SchoolNorth, (34, 24), RGB::from_u8(228, 228, 49), "Miav");
 
 
     let map = Map::new_map_rooms_and_corridors(&mut gs.ecs, Place::Home);

@@ -3,6 +3,17 @@
 version = 3
 
 [[package]]
+name = "RoguelikePractice"
+version = "1.0.0"
+dependencies = [
+ "rltk",
+ "serde",
+ "serde_json",
+ "specs",
+ "specs-derive",
+]
+
+[[package]]
 name = "adler"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -819,17 +830,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3ede5cfa60c958e60330d65163adbc4211e15a2653ad80eb0cce878de120121"
 dependencies = [
  "rayon",
-]
-
-[[package]]
-name = "htr_project_2023"
-version = "1.0.0"
-dependencies = [
- "rltk",
- "serde",
- "serde_json",
- "specs",
- "specs-derive",
 ]
 
 [[package]]
